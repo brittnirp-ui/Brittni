@@ -454,28 +454,38 @@
   <script>
     const skills = [
       // Web
-      'Websites','Web Development','WordPress','Elementor','Custom Plugins','PHP','JavaScript','Bug Fixes','Site Speed','Site Migrations','Web Hosting','Domain & DNS','E-commerce',
+      'Websites','Web Development','WordPress','Elementor','WooCommerce','Shopify','Custom Plugins','Custom Themes','PHP','JavaScript','jQuery','HTML & CSS','Responsive Design','Bug Fixes','Site Speed','Site Audits','Site Migrations','Web Hosting','Domain & DNS','SSL Setup','E-commerce','Landing Pages','Membership Sites','Blog Setup','Contact Forms','Booking Systems','API Integrations',
       // AI
-      'AI Tools','Custom GPTs','Prompt Engineering','Automation','Workflow Design','CRM Management',
+      'AI Tools','Custom GPTs','ChatGPT Setup','Claude Setup','Prompt Engineering','AI Workflows','Automation','Zapier','Make.com','Workflow Design','CRM Setup','CRM Cleanup','HubSpot','Airtable','Notion Setup',
       // Security
-      'Cybersecurity','Ethical Hacking','Pen Testing','Vulnerability Scans','Privacy Audits','Phishing Training','Online Safety','Password Security','2FA Setup',
+      'Cybersecurity','Ethical Hacking','Pen Testing','Vulnerability Scans','Privacy Audits','Phishing Training','Online Safety','Password Managers','Password Security','2FA Setup','Data Encryption','Secure File Sharing','Account Recovery','Identity Protection','Scam Education',
       // Tech support
-      'Phone Help','Computer Help','Tablet Help','WiFi Help','Network Setup','Smart Home Setup','Software Setup','Email Setup','Calendar Setup','Tech Tutoring','App Tutorials','Social Media Lessons','Data Cleanup','Backup & Transfer','Photo Restoration','Photo Editing','Audio Editing','Slideshows',
+      'iPhone Help','Android Help','iPad Help','Tablet Help','Mac Help','Windows Help','WiFi Setup','Network Setup','Router Setup','Mesh Networks','Smart Home Setup','Alexa Setup','Google Home Setup','Smart Lights','Smart Locks','Smart Thermostats','Software Install','Email Setup','Gmail Help','Outlook Help','Calendar Sync','Tech Tutoring','App Tutorials','Excel Help','Word Help','Google Docs','Google Sheets','PowerPoint Help','Form Software','Gravity Forms','JotForm','Typeform','Data Cleanup','Spreadsheet Cleanup','Contact Cleanup','Backup Systems','iCloud Setup','Google Drive Setup','Photo Backup','Photo Restoration','Photo Editing','Color Correction','Background Removal','Audio Editing','Podcast Editing','Slideshow Creation','Memorial Slideshows','Event Slideshows',
       // Marketing
-      'Marketing Copy','Social Media Strategy','SEO Basics','Google Business Profile','Newsletter Design','Email Templates','Ad Mockups','Brand Kits','Logos & Branding','Booking Pages','Forms & Surveys','Loyalty Cards','Pricing Guides','Process Docs','Resume Help','Etsy Shop Setup','Print-on-Demand','Branded Packaging',
+      'Marketing Copy','Website Copy','Sales Copy','Email Copy','Video Scripts','YouTube Scripts','TikTok Scripts','Reels Scripts','Magazine Articles','Blog Posts','Press Releases','Product Descriptions','About Pages','Bio Writing','Social Media Strategy','Content Calendars','Hashtag Strategy','SEO Basics','Keyword Research','Meta Descriptions','Google Business Profile','Local SEO','Yelp Setup','Newsletter Design','Mailchimp Setup','Constant Contact','ConvertKit','Email Templates','Ad Mockups','Facebook Ads','Instagram Ads','Brand Kits','Brand Guidelines','Logo Design','Color Palettes','Typography Systems','Booking Pages','Calendly Setup','Acuity Setup','Forms & Surveys','Loyalty Cards','Pricing Guides','Service Menus','Process Docs','SOPs','Resume Help','Cover Letters','LinkedIn Optimization','Etsy Shop Setup','Etsy SEO','Print-on-Demand','Printful Setup','Printify Setup','Branded Packaging','Shipping Labels','Thank You Cards',
+      // Social media specific
+      'Facebook Help','Instagram Help','TikTok Help','LinkedIn Help','Pinterest Help','Twitter Help','YouTube Help','Snapchat Help','Threads Help','Bluesky Help',
       // Design
-      'Digital Art','Graphics','Logo Design','Print Design','Sticker Design','Bookmark Design','CAD Design','3D Modeling','Motion Graphics',
+      'Digital Art','Illustration','Character Design','Graphics','Social Media Graphics','Banner Design','Thumbnail Design','Logo Design','Brand Marks','Print Design','Flyer Design','Brochure Design','Postcard Design','Sticker Design','Bookmark Design','CAD Design','3D Modeling','Motion Graphics','Animated Logos','GIF Design',
       // Physical goods
-      'Stickers','Vinyl Decals','Iron-On Transfers','T-Shirts','Custom Apparel','Tote Bags','Mugs & Glasses','Drink Coasters','Bumper Stickers','Custom Merch','Personalized Gifts','Themed Gift Sets','Memorial Keepsakes','Holiday Decor','Greeting Cards','Party Invites','Wedding Stationery','Birthday Sets','Graduation Gifts','Yard Signs','Banners & Posters','Menus','3D Printing','3D Printed Parts','Custom Keychains','Custom Fabric Patterns'
+      'Stickers','Vinyl Stickers','Holographic Stickers','Vinyl Decals','Car Decals','Window Decals','Wall Decals','Iron-On Transfers','HTV Designs','T-Shirts','Hoodies','Tank Tops','Custom Apparel','Hat Embroidery','Tote Bags','Mugs','Tumblers','Glasses','Drink Coasters','Bumper Stickers','Custom Merch','Personalized Gifts','Themed Gift Sets','Memorial Keepsakes','Holiday Decor','Christmas Ornaments','Greeting Cards','Birthday Cards','Holiday Cards','Sympathy Cards','Thank You Cards','Party Invites','Save the Dates','Wedding Stationery','Wedding Programs','Wedding Favors','Birthday Sets','Graduation Gifts','Yard Signs','Banners','Posters','Menus','Table Numbers','Place Cards','Seating Charts','3D Printing','3D Printed Parts','Replacement Parts','Custom Keychains','Custom Magnets','Custom Pins','Custom Fabric Patterns'
     ];
 
-    // Shuffle so each row mixes categories
+    // Shuffle the full pool
     const shuffled = [...skills].sort(() => Math.random() - 0.5);
     const rowCount = 12;
-    const perRow = Math.ceil(shuffled.length / rowCount);
+    const perRow = 30; // each row gets a guaranteed minimum of skills
+
+    // Build each row by taking perRow items from the pool, offsetting and wrapping around
     const rows = [];
     for (let i = 0; i < rowCount; i++) {
-      rows.push(shuffled.slice(i * perRow, (i + 1) * perRow));
+      const offset = i * Math.floor(shuffled.length / rowCount);
+      const row = [];
+      for (let j = 0; j < perRow; j++) {
+        row.push(shuffled[(offset + j) % shuffled.length]);
+      }
+      // Re-shuffle each row so they don't look sequential
+      rows.push(row.sort(() => Math.random() - 0.5));
     }
 
     const colors = ['c1','c2','c3','c4','c5','c6','c7','c8'];
