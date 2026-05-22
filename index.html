@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brittni Philippi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Poppins:ital,wght@0,300;0,400;0,600;1,600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #0d0d0d;
+      --gold: #c9a84c;
+      --gold-dim: #7a6030;
+      --white: #f0ede8;
+      --muted: #888;
+    }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 300;
+    }
+
+    /* HERO */
+    #home {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      position: relative;
+      background-image: url('https://images.unsplash.com/photo-1733749130171-67d2d1908055?q=80&w=1170&auto=format&fit=crop');
+      background-size: cover;
+      background-position: center;
+    }
+
+    #home::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    #home > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-name {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(2.5rem, 8vw, 5.5rem);
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.08em;
+      line-height: 1;
+    }
+
+    .hero-subtitle {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+      font-weight: 400;
+      color: var(--gold);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 1.2rem;
+      margin-bottom: -0.3rem;
+    }
+
+    .hero-maker {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(1.1rem, 3vw, 1.6rem);
+      font-weight: 600;
+      font-style: italic;
+      color: var(--white);
+      margin-top: 0;
+    }
+
+    .hero-divider {
+      width: 60px;
+      height: 1px;
+      background: var(--gold-dim);
+      margin: 2rem auto;
+    }
+
+    .hero-tagline {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+      color: var(--muted);
+      font-weight: 300;
+      font-style: italic;
+      max-width: 420px;
+    }
+
+    /* ABOUT */
+    #about {
+      padding: 6rem 2rem;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .about-photo {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      margin: 0 auto 2rem;
+      border: 2px solid var(--gold);
+    }
+
+    @media (min-width: 768px) {
+      .about-photo {
+        float: left;
+        width: 200px;
+        height: 200px;
+        margin: 0.5rem 2rem 1rem 0;
+        shape-outside: circle(50%);
+      }
+    }
+
+    .section-label {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+
+    .section-heading {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 500;
+      color: var(--white);
+      letter-spacing: 0.04em;
+      line-height: 1.15;
+      margin-bottom: 2rem;
+    }
+
+    .about-text p {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--white);
+      margin-bottom: 1.2rem;
+    }
+
+    .about-text p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* SKILLS MARQUEE */
+    #skills {
+      padding: 5rem 0;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+
+    #skills .section-label {
+      text-align: center;
+      padding: 0 2rem;
+    }
+
+    #skills .section-heading {
+      text-align: center;
+      padding: 0 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .skills-intro {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(0.95rem, 2.3vw, 1.05rem);
+      font-weight: 300;
+      color: var(--white);
+      text-align: center;
+      max-width: 540px;
+      margin: 0 auto 1.5rem;
+      padding: 0 2rem;
+      line-height: 1.6;
+    }
+
+    .skills-cta {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 0 2rem;
+    }
+
+    .skills-cta a {
+      display: inline-block;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      border: 1px solid var(--gold);
+      padding: 0.7rem 1.6rem;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .skills-cta a:hover {
+      background: var(--gold);
+      color: var(--black);
+    }
+
+    .marquee-row {
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 0.2rem;
+    }
+
+    .marquee-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .marquee-row::before,
+    .marquee-row::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 60px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .marquee-row::before {
+      left: 0;
+      background: linear-gradient(to right, var(--black), transparent);
+    }
+
+    .marquee-row::after {
+      right: 0;
+      background: linear-gradient(to left, var(--black), transparent);
+    }
+
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      gap: 1.2rem;
+      padding: 0.15rem 0;
+      align-items: center;
+    }
+
+    .marquee-row.left .marquee-track {
+      animation: scroll-left 160s linear infinite;
+    }
+
+    .marquee-row.right .marquee-track {
+      animation: scroll-right 180s linear infinite;
+    }
+
+    @keyframes scroll-left {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    @keyframes scroll-right {
+      from { transform: translateX(-50%); }
+      to { transform: translateX(0); }
+    }
+
+    .skill-tag {
+      display: inline-block;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+      border: none;
+      padding: 0;
+    }
+
+    /* Business card palette */
+    .c1 { color: #c9a84c; }   /* gold */
+    .c2 { color: #d94f4f; }   /* red */
+    .c3 { color: #4a8fd1; }   /* blue */
+    .c4 { color: #e8e4dc; }   /* off-white */
+    .c5 { color: #b07b3a; }   /* burnt amber */
+    .c6 { color: #6b7e8c; }   /* slate */
+    .c7 { color: #8a8a8a; }   /* gray */
+    .c8 { color: #d97f4f; }   /* coral */
+
+    .skills-closer {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(1.2rem, 3.2vw, 1.6rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--white);
+      text-align: center;
+      margin-top: 1.5rem;
+      padding: 0 2rem;
+    }
+
+    .gold-divider {
+      width: 80px;
+      height: 1px;
+      background: var(--gold);
+      margin: 0 auto;
+      border: none;
+    }
+
+    /* CONTACT */
+    #contact {
+      padding: 6rem 2rem;
+      max-width: 720px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    #contact .section-label {
+      text-align: center;
+    }
+
+    #contact .section-heading {
+      text-align: center;
+    }
+
+    .contact-list {
+      list-style: none;
+      padding: 0;
+      margin: 2rem 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .contact-list a {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(1rem, 2.5vw, 1.15rem);
+      font-weight: 300;
+      color: var(--white);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .contact-list a:hover {
+      color: var(--gold);
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 2rem;
+      text-align: center;
+      border-top: 1px solid #1a1a1a;
+    }
+
+    footer p {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 300;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <section id="home">
+    <h1 class="hero-name">Brittni Philippi</h1>
+    <p class="hero-subtitle">Web Dev &nbsp;|&nbsp; AI Expert &nbsp;|&nbsp; Creative</p>
+    <p class="hero-maker">Maker</p>
+    <div class="hero-divider"></div>
+    <p class="hero-tagline">If you need it done, I can do it.</p>
+  </section>
+
+  <section id="about">
+    <p class="section-label">About</p>
+    <h2 class="section-heading">A little about me</h2>
+    <img src="IMG_5980.jpeg" alt="Brittni Philippi" class="about-photo" />
+    <div class="about-text">
+      <p>I'm Brittni — a senior web developer and IT administrator based in Fresno, California. I've been writing code since I was twelve, which means I have strong opinions, sharp instincts, and a long list of things I've broken and then fixed. While other twelve-year-old coding geniuses were breaking into NASA, I was getting paid in lunch money to tweak my classmates' MySpace pages. Honest work.</p>
+      <p>By trade, I'm a Software Engineer. I make websites, I build apps, and I can probably get into your smart fridge if you've lost the password. AI tooling, automation, cybersecurity, and IT support all fall under that same umbrella for me — if it runs on logic, I can work with it.</p>
+      <p>Outside of code, I'm a maker. I draw, paint, illustrate, sew, design and cut vinyl, print custom t-shirts, make hand-designed greeting cards, and 3D print pretty much whatever the moment calls for.</p>
+      <p>I hold a B.S. in Computer Science and Software Engineering and am currently pursuing a Master's in Cybersecurity. I'm a two-time ADDY Award winner, a member of Mensa and Toastmasters, and a member of the American Physical Society's Women in STEM.</p>
+      <p>If you need it done, I can do it. That's not a slogan — it's just how I'm wired.</p>
+    </div>
+  </section>
+
+  <hr class="gold-divider" />
+
+  <section id="skills">
+    <p class="section-label">Skills</p>
+    <h2 class="section-heading">What I can do</h2>
+    <p class="skills-intro">Need something built, fixed, designed, or figured out? Most of what I offer is below — and if you don't see it, just ask.</p>
+    <div class="skills-cta">
+      <a href="#contact">Hire Me</a>
+    </div>
+
+    <div class="marquee-row left">
+      <div class="marquee-track" id="row1"></div>
+    </div>
+    <div class="marquee-row right">
+      <div class="marquee-track" id="row2"></div>
+    </div>
+    <div class="marquee-row left">
+      <div class="marquee-track" id="row3"></div>
+    </div>
+    <div class="marquee-row right">
+      <div class="marquee-track" id="row4"></div>
+    </div>
+    <div class="marquee-row left">
+      <div class="marquee-track" id="row5"></div>
+    </div>
+    <div class="marquee-row right">
+      <div class="marquee-track" id="row6"></div>
+    </div>
+    <div class="marquee-row left">
+      <div class="marquee-track" id="row7"></div>
+    </div>
+    <div class="marquee-row right">
+      <div class="marquee-track" id="row8"></div>
+    </div>
+    <div class="marquee-row left">
+      <div class="marquee-track" id="row9"></div>
+    </div>
+    <div class="marquee-row right">
+      <div class="marquee-track" id="row10"></div>
+    </div>
+    <div class="marquee-row left">
+      <div class="marquee-track" id="row11"></div>
+    </div>
+    <div class="marquee-row right">
+      <div class="marquee-track" id="row12"></div>
+    </div>
+
+    <p class="skills-closer">You've got the idea,<br />I've got the know-how.</p>
+  </section>
+
+  <hr class="gold-divider" />
+
+  <section id="contact">
+    <p class="section-label">Contact</p>
+    <h2 class="section-heading">Let's make something</h2>
+    <ul class="contact-list">
+      <li><a href="mailto:hello@brittni.co">hello@brittni.co</a></li>
+      <li><a href="tel:+13187897065">(318) 789-7065</a></li>
+      <li><a href="https://www.linkedin.com/in/brittniphilippi" target="_blank" rel="noopener">LinkedIn</a></li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>&copy; <span id="year"></span> Brittni Philippi. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const skills = [
+      // Web
+      'Websites','Web Development','WordPress','Elementor','Custom Plugins','PHP','JavaScript','Bug Fixes','Site Speed','Site Migrations','Web Hosting','Domain & DNS','E-commerce',
+      // AI
+      'AI Tools','Custom GPTs','Prompt Engineering','Automation','Workflow Design','CRM Management',
+      // Security
+      'Cybersecurity','Ethical Hacking','Pen Testing','Vulnerability Scans','Privacy Audits','Phishing Training','Online Safety','Password Security','2FA Setup',
+      // Tech support
+      'Phone Help','Computer Help','Tablet Help','WiFi Help','Network Setup','Smart Home Setup','Software Setup','Email Setup','Calendar Setup','Tech Tutoring','App Tutorials','Social Media Lessons','Data Cleanup','Backup & Transfer','Photo Restoration','Photo Editing','Audio Editing','Slideshows',
+      // Marketing
+      'Marketing Copy','Social Media Strategy','SEO Basics','Google Business Profile','Newsletter Design','Email Templates','Ad Mockups','Brand Kits','Logos & Branding','Booking Pages','Forms & Surveys','Loyalty Cards','Pricing Guides','Process Docs','Resume Help','Etsy Shop Setup','Print-on-Demand','Branded Packaging',
+      // Design
+      'Digital Art','Graphics','Logo Design','Print Design','Sticker Design','Bookmark Design','CAD Design','3D Modeling','Motion Graphics',
+      // Physical goods
+      'Stickers','Vinyl Decals','Iron-On Transfers','T-Shirts','Custom Apparel','Tote Bags','Mugs & Glasses','Drink Coasters','Bumper Stickers','Custom Merch','Personalized Gifts','Themed Gift Sets','Memorial Keepsakes','Holiday Decor','Greeting Cards','Party Invites','Wedding Stationery','Birthday Sets','Graduation Gifts','Yard Signs','Banners & Posters','Menus','3D Printing','3D Printed Parts','Custom Keychains','Custom Fabric Patterns'
+    ];
+
+    // Shuffle so each row mixes categories
+    const shuffled = [...skills].sort(() => Math.random() - 0.5);
+    const rowCount = 12;
+    const perRow = Math.ceil(shuffled.length / rowCount);
+    const rows = [];
+    for (let i = 0; i < rowCount; i++) {
+      rows.push(shuffled.slice(i * perRow, (i + 1) * perRow));
+    }
+
+    const colors = ['c1','c2','c3','c4','c5','c6','c7','c8'];
+    function randColor() {
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    rows.forEach((rowSkills, i) => {
+      const track = document.getElementById('row' + (i + 1));
+      if (!track) return;
+      // Duplicate for seamless loop
+      [...rowSkills, ...rowSkills].forEach(skill => {
+        const tag = document.createElement('span');
+        tag.className = 'skill-tag ' + randColor();
+        tag.textContent = skill;
+        track.appendChild(tag);
+      });
+    });
+
+    // Dynamic copyright year
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+
+</body>
+</html>
