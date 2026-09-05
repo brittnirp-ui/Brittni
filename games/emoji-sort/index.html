@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>Emoji Sort</title>
+<style>
+  :root {
+    --bg: #0e0b12; --panel: #17131d; --panel-2: #1f1a29; --border: #35293f;
+    --gold: #c9a24b; --gold-dim: #8a7238; --text: #ece6f0; --text-dim: #b3a7bd;
+    --accent: #7c4dff; --tube-empty: #221c2b; --danger: #c05a5a; --success: #6fae7c;
+    --shadow: rgba(0,0,0,0.5);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f4f1ea; --panel: #ffffff; --panel-2: #f0ece1; --border: #d9cfb8;
+      --gold: #a1791f; --gold-dim: #c2a24f; --text: #241d2b; --text-dim: #5b5262;
+      --accent: #6a3ff0; --tube-empty: #e9e3d3; --danger: #b0453f; --success: #3f7d4e;
+      --shadow: rgba(0,0,0,0.15);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e0b12; --panel: #17131d; --panel-2: #1f1a29; --border: #35293f;
+    --gold: #c9a24b; --gold-dim: #8a7238; --text: #ece6f0; --text-dim: #b3a7bd;
+    --accent: #7c4dff; --tube-empty: #221c2b; --danger: #c05a5a; --success: #6fae7c;
+    --shadow: rgba(0,0,0,0.5);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh; padding: 12px;
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    max-width: 720px; margin: 0 auto;
+  }
+  h1 { font-size: 1.35rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--gold); margin: 4px 0 2px; text-align: center; }
+  .subtitle { text-align: center; color: var(--text-dim); font-size: 0.8rem; margin-bottom: 16px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 14px; box-shadow: 0 4px 14px var(--shadow); }
+  .panel h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold-dim); margin: 0 0 10px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  input[type="text"], select, input[type="number"] {
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    padding: 9px 10px; border-radius: 8px; font-size: 0.95rem; flex: 1; min-width: 120px;
+  }
+  input:focus, select:focus { outline: 1px solid var(--gold-dim); }
+  button {
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    padding: 9px 14px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; white-space: nowrap;
+  }
+  button:active { transform: translateY(1px); }
+  button.primary { background: linear-gradient(135deg, var(--gold-dim), var(--gold)); color: #1a1420; border: none; font-weight: 600; }
+  button.danger { border-color: var(--danger); color: var(--danger); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  button.toggle-on { border-color: var(--gold); color: var(--gold); }
+
+  .token-banner {
+    text-align: center; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 14px;
+  }
+  .token-banner b { color: var(--gold); }
+
+  .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .home-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 18px 10px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    box-shadow: 0 4px 14px var(--shadow); white-space: normal;
+  }
+  .home-card-emoji { font-size: 1.8rem; }
+  .home-card-title { font-weight: 700; font-size: 1rem; }
+  .home-card-sub { font-size: 0.75rem; color: var(--text-dim); }
+  .home-card-sub.progress { color: var(--gold-dim); }
+
+  .back-row { margin-bottom: 8px; display: flex; gap: 8px; justify-content: space-between; }
+  #backBtn { font-weight: 600; }
+  .back-row button { padding: 6px 10px; font-size: 0.8rem; }
+
+  .mode-bar { display: none; }
+
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 7px 12px; margin-bottom: 8px; font-size: 0.82rem;
+  }
+  #levelLabel { color: var(--gold-dim); font-weight: 600; }
+  #timerDisplay { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); letter-spacing: 0.03em; }
+
+  .set-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .set-item { display: flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+  .set-item .set-name { font-weight: 600; font-size: 0.85rem; min-width: 70px; }
+  .set-item .set-emojis { flex: 1; font-size: 1.1rem; letter-spacing: 2px; overflow-x: auto; white-space: nowrap; }
+  .set-item.active { border-color: var(--gold); }
+  .set-item button { padding: 5px 8px; font-size: 0.75rem; }
+
+  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .settings-grid label { font-size: 0.75rem; color: var(--text-dim); display: block; margin-bottom: 4px; }
+
+  .controls { display: flex; gap: 7px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
+  .ctrl-btn {
+    padding: 8px 15px; font-size: 0.74rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 3px;
+    transition: border-color 0.15s, color 0.15s, transform 0.1s;
+  }
+  .ctrl-btn span { font-weight: 800; letter-spacing: normal; text-transform: none; }
+  .ctrl-btn.toggle-on { background: var(--gold); color: #1a1420; border-color: var(--gold); }
+  .tooltip-bubble {
+    position: fixed; z-index: 3000; background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--gold-dim); border-radius: 8px; padding: 8px 10px;
+    font-size: 0.76rem; max-width: 210px; text-align: center; pointer-events: none;
+    box-shadow: 0 6px 18px var(--shadow); line-height: 1.3;
+  }
+  .board { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 5px; justify-content: center; padding: 6px 0 10px; }
+  .tube {
+    width: 40px; background: var(--tube-empty); border: 2px solid var(--border);
+    border-radius: 8px 8px 13px 13px; display: flex; flex-direction: column-reverse;
+    padding: 4px 3px; gap: 3px; cursor: pointer; transition: border-color 0.15s, transform 0.1s;
+  }
+  .tube.selected { border-color: var(--gold); transform: translateY(-3px); box-shadow: 0 4px 12px var(--shadow); }
+  .tube .cell { height: 28px; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; border-radius: 5px; transition: background-color 0.15s; }
+  .tube .cell.filled { background: var(--panel-2); }
+  .tube .cell.mystery { color: var(--text-dim); font-size: 1.3rem; }
+  .flying-piece {
+    position: fixed; display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; background: var(--panel-2); border-radius: 6px;
+    pointer-events: none; z-index: 1000; transition: transform 0.2s cubic-bezier(0.3, 0.7, 0.3, 1);
+    will-change: transform;
+  }
+  .status { text-align: center; min-height: 16px; font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
+  .status.win { color: var(--success); font-weight: 700; font-size: 1rem; }
+  .storage-note { text-align: center; font-size: 0.7rem; color: var(--text-dim); opacity: 0.6; margin-top: 2px; }
+
+  .lb-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2000; padding: 20px;
+  }
+  .modal-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    padding: 24px 20px; max-width: 320px; width: 100%; text-align: center;
+    box-shadow: 0 10px 30px var(--shadow);
+  }
+  .modal-emoji { font-size: 2.2rem; margin-bottom: 4px; }
+  .modal-card h2 { color: var(--success); margin: 0 0 8px; font-size: 1.3rem; text-transform: none; letter-spacing: normal; }
+  .modal-card p { color: var(--text-dim); font-size: 0.9rem; margin: 0 0 18px; }
+  .modal-buttons { display: flex; gap: 10px; }
+  .modal-buttons button { flex: 1; padding: 11px 8px; font-size: 0.9rem; }
+  .lb-tab { flex: 1; padding: 8px 4px; font-size: 0.8rem; text-align: center; }
+  .lb-tab.active { background: linear-gradient(135deg, var(--gold-dim), var(--gold)); color: #1a1420; border: none; font-weight: 700; }
+
+  .lb-row { display: flex; align-items: center; gap: 10px; padding: 6px 4px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  .lb-row:last-child { border-bottom: none; }
+  .lb-rank { color: var(--gold); font-weight: 700; width: 28px; }
+  .lb-time { font-variant-numeric: tabular-nums; font-weight: 600; flex: 1; }
+  .lb-date { color: var(--text-dim); font-size: 0.75rem; }
+  .empty-note { color: var(--text-dim); font-size: 0.8rem; text-align: center; padding: 8px 0; }
+
+  ::-webkit-scrollbar { height: 6px; width: 6px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ===== HOME PAGE ===== -->
+<div id="homePage">
+  <h1>Emoji Sort</h1>
+  <div class="subtitle">sort any icons you want, into as many tubes as you want</div>
+  <div class="token-banner">🧪 Bonus tubes available: <b id="homeTokenCount">0</b></div>
+  <div class="home-grid">
+    <button class="home-card" data-mode="easy">
+      <span class="home-card-emoji">😊</span>
+      <span class="home-card-title">Easy</span>
+      <span class="home-card-sub" id="homeSubEasy">Streak 1</span>
+    </button>
+    <button class="home-card" data-mode="medium">
+      <span class="home-card-emoji">😐</span>
+      <span class="home-card-title">Medium</span>
+      <span class="home-card-sub" id="homeSubMedium">Streak 1</span>
+    </button>
+    <button class="home-card" data-mode="hard">
+      <span class="home-card-emoji">🔥</span>
+      <span class="home-card-title">Hard</span>
+      <span class="home-card-sub" id="homeSubHard">Streak 1</span>
+    </button>
+    <button class="home-card" data-mode="custom">
+      <span class="home-card-emoji">🛠️</span>
+      <span class="home-card-title">Custom</span>
+      <span class="home-card-sub" id="homeSubCustom">Streak 1</span>
+    </button>
+  </div>
+
+  <div class="panel">
+    <h2>Best Times</h2>
+    <div class="lb-tabs" id="lbTabs">
+      <button class="lb-tab" data-mode="easy">Easy</button>
+      <button class="lb-tab" data-mode="medium">Medium</button>
+      <button class="lb-tab" data-mode="hard">Hard</button>
+      <button class="lb-tab" data-mode="custom">Custom</button>
+    </div>
+    <div id="homeLeaderboardList"><div class="empty-note">No times yet. Solve one!</div></div>
+  </div>
+
+  <div class="storage-note">Progress, levels, and best times are saved in this browser.</div>
+</div>
+
+<!-- ===== CUSTOM SETTINGS PAGE ===== -->
+<div id="settingsPage" style="display:none;">
+  <div class="back-row">
+    <button id="settingsBackBtn">← Back to Home</button>
+  </div>
+  <h1>Custom Setup</h1>
+  <div class="subtitle">Pick your icons and puzzle shape, then generate</div>
+
+  <div class="panel" id="setsPanel">
+    <h2>Custom Icon Sets</h2>
+    <div class="row">
+      <input type="text" id="setName" placeholder="Set name (e.g. Space)" maxlength="24">
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <input type="text" id="setEmojis" placeholder="Paste icons: 🔥 ⚡ 🌙 🐺 🗡️ ...">
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <input type="number" id="randomCount" min="2" max="14" value="8" style="max-width:70px; flex:0 0 auto;">
+      <button id="randomizeBtn">🎲 Random Icons</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <button class="primary" id="saveSetBtn">Save Set</button>
+      <button id="useTypedBtn">Use Without Saving</button>
+    </div>
+    <div class="set-list" id="setList"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Puzzle Settings</h2>
+    <div class="settings-grid">
+      <div><label for="activeSetSelect">Active set</label><select id="activeSetSelect"></select></div>
+      <div><label for="typesCount">Icon types to use</label><input type="number" id="typesCount" min="2" max="14" value="6"></div>
+      <div><label for="countPerIcon">Emojis needed per tube</label><input type="number" id="countPerIcon" min="2" max="20" value="4"></div>
+      <div><label for="extraTubes">Extra empty tubes</label><input type="number" id="extraTubes" min="1" max="4" value="2"></div>
+    </div>
+    <div class="row"><button class="primary" id="newPuzzleBtn" style="flex:1;">Generate Puzzle & Play</button></div>
+    <div class="storage-note">Settings save automatically each time you generate.</div>
+  </div>
+</div>
+
+<!-- ===== GAME PAGE (shared by all modes) ===== -->
+<div id="gamePage" style="display:none;">
+  <div class="back-row">
+    <button id="backBtn">← Back to Home</button>
+    <button id="editSettingsBtn" style="display:none;">⚙️ Edit Settings</button>
+  </div>
+
+  <div class="status-bar">
+    <span id="levelLabel">Streak 1</span>
+    <span id="timerDisplay">0:00</span>
+  </div>
+
+  <div class="controls">
+    <button id="nextPuzzleBtn" class="primary ctrl-btn" title="New Puzzle" data-tooltip="New Puzzle — instantly generate a fresh puzzle in this mode">Next</button>
+    <button id="undoBtn" class="ctrl-btn" title="Undo" data-tooltip="Undo — reverse your last move">Undo</button>
+    <button id="restartBtn" class="ctrl-btn" title="Restart Puzzle" data-tooltip="Restart Puzzle — reset the board to its starting layout, timer resets">Restart</button>
+    <button id="shuffleBtn" class="ctrl-btn" title="Shuffle Restart" data-tooltip="Shuffle Restart — same icons and tube count, freshly reshuffled">Shuffle</button>
+    <button id="addTubeBtn" class="ctrl-btn" title="Bonus Tube" data-tooltip="Bonus Tube — spend an earned tube to add an extra empty tube">Tubes <span id="tubeCount">0</span></button>
+    <button id="mysteryBtn" class="ctrl-btn" title="Mystery Mode" data-tooltip="Mystery Mode — hides buried icons until they reach the top">Mystery</button>
+    <button id="resetStreakBtn" class="ctrl-btn danger" title="Reset Streak" data-tooltip="Reset Streak — start this mode's streak back at 1 (bonus tubes unaffected)">Reset</button>
+  </div>
+
+  <div class="status" id="status"></div>
+  <div class="board" id="board"></div>
+</div>
+
+<!-- ===== WIN MODAL ===== -->
+<div id="winModalBackdrop" class="modal-backdrop" style="display:none;">
+  <div class="modal-card">
+    <div class="modal-emoji">🎉</div>
+    <h2>Solved!</h2>
+    <p id="winModalText">Nice work.</p>
+    <div class="modal-buttons">
+      <button id="winHomeBtn">🏠 Home</button>
+      <button id="winNextBtn" class="primary">▶ Next Puzzle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tooltipBubble" class="tooltip-bubble" style="display:none;"></div>
+
+<script>
+const AppStorage = (function () {
+  async function getItem(key) { try { return window.localStorage.getItem(key); } catch (e) { return null; } }
+  async function setItem(key, value) { try { window.localStorage.setItem(key, value); return true; } catch (e) { return false; } }
+  return { getItem, setItem };
+})();
+
+(function () {
+  const DEFAULT_SETS = {
+    "Classic": ["😀", "😂", "🥰", "😎", "🤔", "😴", "🤯", "🥳"],
+    "Nature": ["🌸", "🍄", "🍁", "🌵", "🌊", "⛰️", "🌈", "❄️"]
+  };
+  const STORAGE_KEY = "tubeSortCustomSets_v1";
+  const ACTIVE_KEY = "tubeSortActiveSet_v1";
+  const CUSTOM_SETTINGS_KEY = "tubeSortCustomSettings_v1";
+  const LEVELS_KEY = "tubeSortLevels_v1";
+  const BEST_KEY = "tubeSortBestTimes_v1";
+  const TUBE_TOKENS_KEY = "tubeSortTubeTokensUsed_v1";
+  const LIFETIME_WINS_KEY = "tubeSortLifetimeWins_v1";
+  const SAVED_GAMES_KEY = "tubeSortSavedGames_v2";
+
+  const RANDOM_POOL = ["🔥","⚡","🌙","🐺","🗡️","🐦‍⬛","🪓","🌊","☠️","🕸️","🔮","🪬","🧿","⚔️","🛡️","🏹",
+    "😀","😂","🥰","😎","🤔","😴","🤯","🥳","😭","🤩","🙃","😇","🥶","🤠","👻","🤖",
+    "🌸","🍄","🍁","🌵","⛰️","🌈","❄️","🌻","🌴","🍀","🌹","🌷","🍂","🌾","🪸",
+    "🍕","🍔","🌮","🍣","🍩","🍪","🍇","🍓","🍑","🥑","🍒","🍉","🍦","🧁","🍰","🍫",
+    "🐶","🐱","🦊","🐻","🐼","🦁","🐯","🐸","🐙","🦄","🐍","🦉","🐲","🦋","🐝","🐢",
+    "⚽","🏀","🏈","🎾","🎱","🎮","🎲","🎯","🎸","🎹","🎨","🎭","🎬","📚","✏️","🔬",
+    "🚗","✈️","🚀","⛵","🚲","🏰","🗿","⚓","🧭","🔭","💎","🪙","🔑","🔔","💡","🕯️"];
+  const UNIQUE_POOL = Array.from(new Set(RANDOM_POOL));
+
+  const PRESETS = {
+    easy:   { typesMin: 4, typesMax: 5,  copies: 3, extraTubes: 1 },
+    medium: { typesMin: 6, typesMax: 7,  copies: 4, extraTubes: 2 },
+    hard:   { typesMin: 9, typesMax: 10, copies: 5, extraTubes: 2 }
+  };
+
+  let customSets = {};
+  let activeSetName = null;
+  let customSettingsSaved = null;
+
+  let currentMode = null; // null = on home page
+  let levels = { easy: 1, medium: 1, hard: 1, custom: 1 };
+  let bestTimes = { easy: [], medium: [], hard: [], custom: [] };
+  let tubeTokensUsed = 0;
+  let lifetimeWins = 0;
+  let savedGames = { easy: null, medium: null, hard: null, custom: null };
+  let homeLeaderboardMode = "easy";
+
+  let tubes = [];
+  let capacity = 4;
+  let neededPerType = 4;
+  let initialTubesSnapshot = null;
+  let currentTypes = [];
+  let currentExtraTubes = 1;
+  let selectedIdx = null;
+  let history = [];
+  let animatingCells = [];
+  let mysteryMode = false;
+  let revealedCells = new Set();
+  let solved = false;
+
+  let accumulatedMs = 0;
+  let resumedAt = Date.now();
+  let timerRunning = false;
+  let timerInterval = null;
+
+  const $ = (id) => document.getElementById(id);
+
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function modeLabel(m) { return { easy: "Easy", medium: "Medium", hard: "Hard", custom: "Custom" }[m] || m; }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function escapeHtml(s) {
+    const div = document.createElement("div");
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  function setStatus(msg, isWin) {
+    const el = $("status");
+    el.textContent = msg;
+    el.className = "status" + (isWin ? " win" : "");
+  }
+
+  function formatTime(ms) {
+    const totalSec = Math.floor(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  }
+
+  // ---------- persistence: icon sets ----------
+  async function loadSets() {
+    let raw = await AppStorage.getItem(STORAGE_KEY);
+    try { customSets = raw ? JSON.parse(raw) : {}; } catch (e) { customSets = {}; }
+    if (Object.keys(customSets).length === 0) customSets = Object.assign({}, DEFAULT_SETS);
+    const active = await AppStorage.getItem(ACTIVE_KEY);
+    activeSetName = active && customSets[active] ? active : Object.keys(customSets)[0];
+  }
+  async function persistSets() { await AppStorage.setItem(STORAGE_KEY, JSON.stringify(customSets)); }
+  async function persistActive() { await AppStorage.setItem(ACTIVE_KEY, activeSetName); }
+
+  function parseEmojiInput(str) {
+    if (!str) return [];
+    let tokens;
+    if (typeof Intl !== "undefined" && Intl.Segmenter) {
+      const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+      tokens = Array.from(segmenter.segment(str), (seg) => seg.segment);
+    } else {
+      tokens = str.split(/[\s,]+/);
+    }
+    const seen = new Set();
+    const out = [];
+    for (let tok of tokens) {
+      tok = tok.trim();
+      if (!tok || tok === ",") continue;
+      if (seen.has(tok)) continue;
+      seen.add(tok);
+      out.push(tok);
+    }
+    return out;
+  }
+
+  function renderSetList() {
+    const list = $("setList");
+    list.innerHTML = "";
+    Object.keys(customSets).forEach((name) => {
+      const emojis = customSets[name];
+      const item = document.createElement("div");
+      item.className = "set-item" + (name === activeSetName ? " active" : "");
+      item.innerHTML = `
+        <span class="set-name">${escapeHtml(name)}</span>
+        <span class="set-emojis">${emojis.join(" ")}</span>
+        <button data-action="load" data-name="${escapeHtml(name)}">Load</button>
+        <button data-action="delete" data-name="${escapeHtml(name)}" class="danger">✕</button>
+      `;
+      list.appendChild(item);
+    });
+
+    const select = $("activeSetSelect");
+    select.innerHTML = "";
+    Object.keys(customSets).forEach((name) => {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = `${name} (${customSets[name].length})`;
+      if (name === activeSetName) opt.selected = true;
+      select.appendChild(opt);
+    });
+
+    list.querySelectorAll("button[data-action]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const name = btn.getAttribute("data-name");
+        if (btn.getAttribute("data-action") === "load") {
+          activeSetName = name;
+          await persistActive();
+          renderSetList();
+          setStatus(`Loaded "${name}" as active set.`);
+        } else if (btn.getAttribute("data-action") === "delete") {
+          if (Object.keys(customSets).length <= 1) { setStatus("Can't delete your only set."); return; }
+          delete customSets[name];
+          if (activeSetName === name) { activeSetName = Object.keys(customSets)[0]; await persistActive(); }
+          await persistSets();
+          renderSetList();
+        }
+      });
+    });
+  }
+
+  // ---------- persistence: levels, best times, tokens, custom settings, saved games ----------
+  function loadPersisted() {
+    try { levels = JSON.parse(localStorage.getItem(LEVELS_KEY) || "{}"); } catch (e) { levels = {}; }
+    ["easy", "medium", "hard", "custom"].forEach((m) => { if (!levels[m]) levels[m] = 1; });
+    try { bestTimes = JSON.parse(localStorage.getItem(BEST_KEY) || "{}"); } catch (e) { bestTimes = {}; }
+    ["easy", "medium", "hard", "custom"].forEach((m) => { if (!bestTimes[m]) bestTimes[m] = []; });
+    try { tubeTokensUsed = parseInt(localStorage.getItem(TUBE_TOKENS_KEY) || "0", 10) || 0; } catch (e) { tubeTokensUsed = 0; }
+    const rawLifetimeWins = localStorage.getItem(LIFETIME_WINS_KEY);
+    if (rawLifetimeWins === null) {
+      lifetimeWins = ["easy", "medium", "hard", "custom"].reduce((sum, m) => sum + Math.max(0, (levels[m] || 1) - 1), 0);
+      saveLifetimeWins();
+    } else {
+      lifetimeWins = parseInt(rawLifetimeWins, 10) || 0;
+    }
+    try { customSettingsSaved = JSON.parse(localStorage.getItem(CUSTOM_SETTINGS_KEY) || "null"); } catch (e) { customSettingsSaved = null; }
+    try { savedGames = JSON.parse(localStorage.getItem(SAVED_GAMES_KEY) || "{}"); } catch (e) { savedGames = {}; }
+    ["easy", "medium", "hard", "custom"].forEach((m) => { if (!savedGames[m]) savedGames[m] = null; });
+  }
+  function saveLevels() { localStorage.setItem(LEVELS_KEY, JSON.stringify(levels)); }
+  function saveBestTimes() { localStorage.setItem(BEST_KEY, JSON.stringify(bestTimes)); }
+  function saveTubeTokens() { localStorage.setItem(TUBE_TOKENS_KEY, String(tubeTokensUsed)); }
+  function saveLifetimeWins() { localStorage.setItem(LIFETIME_WINS_KEY, String(lifetimeWins)); }
+  function saveCustomSettings(obj) { customSettingsSaved = obj; localStorage.setItem(CUSTOM_SETTINGS_KEY, JSON.stringify(obj)); }
+  function persistSavedGames() { localStorage.setItem(SAVED_GAMES_KEY, JSON.stringify(savedGames)); }
+
+  function saveGameState() {
+    if (!currentMode || !tubes.length) return;
+    savedGames[currentMode] = {
+      tubes, capacity, neededPerType, initialTubesSnapshot, mysteryMode, solved,
+      revealedCells: Array.from(revealedCells),
+      currentTypes, currentExtraTubes,
+      elapsedMs: currentElapsedMs()
+    };
+    persistSavedGames();
+  }
+  function clearSavedGame(mode) { savedGames[mode] = null; persistSavedGames(); }
+
+  function recordTime(mode, ms) {
+    const arr = bestTimes[mode] || [];
+    arr.push({ ms, date: new Date().toISOString() });
+    arr.sort((a, b) => a.ms - b.ms);
+    bestTimes[mode] = arr.slice(0, 10);
+    saveBestTimes();
+  }
+
+  function renderHomeLeaderboard() {
+    document.querySelectorAll(".lb-tab").forEach((b) => b.classList.toggle("active", b.dataset.mode === homeLeaderboardMode));
+    const arr = bestTimes[homeLeaderboardMode] || [];
+    const list = $("homeLeaderboardList");
+    if (arr.length === 0) { list.innerHTML = '<div class="empty-note">No times yet. Solve one!</div>'; return; }
+    list.innerHTML = arr.map((r, i) => `
+      <div class="lb-row">
+        <span class="lb-rank">#${i + 1}</span>
+        <span class="lb-time">${formatTime(r.ms)}</span>
+        <span class="lb-date">${new Date(r.date).toLocaleDateString()}</span>
+      </div>`).join("");
+  }
+
+  function updateLevelDisplay() {
+    if (!currentMode) return;
+    $("levelLabel").textContent = `${modeLabel(currentMode)} — Streak ${levels[currentMode]}`;
+  }
+
+  function availableTubeTokens() {
+    const earned = Math.floor(lifetimeWins / 5);
+    return Math.max(0, earned - tubeTokensUsed);
+  }
+
+  function updateAddTubeButton() {
+    if (!currentMode) return;
+    const avail = availableTubeTokens();
+    $("tubeCount").textContent = avail;
+    $("addTubeBtn").disabled = avail <= 0;
+    const tip = avail > 0 ? `Bonus Tube — spend an earned tube to add an extra empty tube (${avail} available)` : "Bonus Tube — none earned yet, win 5 puzzles (any mode combined) to earn one";
+    $("addTubeBtn").setAttribute("data-tooltip", tip);
+    $("addTubeBtn").title = avail > 0 ? `Bonus Tube (${avail} available)` : "Bonus Tube (none available)";
+  }
+
+  function syncMysteryButton() {
+    $("mysteryBtn").classList.toggle("ctrl-btn", true);
+    $("mysteryBtn").classList.toggle("toggle-on", mysteryMode);
+    $("mysteryBtn").title = "Mystery Mode: " + (mysteryMode ? "On" : "Off");
+  }
+
+  function populateCustomSettingsForm() {
+    if (customSettingsSaved) {
+      if (customSettingsSaved.activeSetName && customSets[customSettingsSaved.activeSetName]) {
+        activeSetName = customSettingsSaved.activeSetName;
+      }
+      if (customSettingsSaved.typesWanted) $("typesCount").value = customSettingsSaved.typesWanted;
+      if (customSettingsSaved.copies) $("countPerIcon").value = customSettingsSaved.copies;
+      if (customSettingsSaved.extra) $("extraTubes").value = customSettingsSaved.extra;
+    }
+  }
+
+  function updateHomeCards() {
+    $("homeTokenCount").textContent = availableTubeTokens();
+    ["easy", "medium", "hard", "custom"].forEach((m) => {
+      const el = $("homeSub" + m.charAt(0).toUpperCase() + m.slice(1));
+      const inProgress = savedGames[m] && !savedGames[m].solved;
+      el.textContent = `Streak ${levels[m]}` + (inProgress ? " • In Progress" : "");
+      el.className = "home-card-sub" + (inProgress ? " progress" : "");
+    });
+  }
+
+  // ---------- timer ----------
+  function currentElapsedMs() { return accumulatedMs + (timerRunning ? Date.now() - resumedAt : 0); }
+  function startTimer() {
+    resumedAt = Date.now();
+    timerRunning = true;
+    clearInterval(timerInterval);
+    updateTimerDisplay();
+    timerInterval = setInterval(updateTimerDisplay, 500);
+  }
+  function pauseTimer() {
+    if (timerRunning) { accumulatedMs += Date.now() - resumedAt; timerRunning = false; }
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  function updateTimerDisplay() { $("timerDisplay").textContent = formatTime(currentElapsedMs()); }
+
+  // ---------- page navigation ----------
+  function showHomePage() {
+    $("gamePage").style.display = "none";
+    $("settingsPage").style.display = "none";
+    $("homePage").style.display = "block";
+    updateHomeCards();
+    renderHomeLeaderboard();
+  }
+  function showSettingsPage() {
+    $("homePage").style.display = "none";
+    $("gamePage").style.display = "none";
+    $("settingsPage").style.display = "block";
+  }
+  function showGamePage() {
+    $("homePage").style.display = "none";
+    $("settingsPage").style.display = "none";
+    $("gamePage").style.display = "block";
+  }
+
+  function resumeSavedGame(mode, existing) {
+    tubes = existing.tubes;
+    capacity = existing.capacity;
+    neededPerType = existing.neededPerType;
+    initialTubesSnapshot = existing.initialTubesSnapshot || JSON.parse(JSON.stringify(tubes));
+    mysteryMode = !!existing.mysteryMode;
+    revealedCells = new Set(existing.revealedCells || []);
+    solved = false;
+    history = [];
+    selectedIdx = null;
+    animatingCells = [];
+    accumulatedMs = existing.elapsedMs || 0;
+    currentTypes = existing.currentTypes && existing.currentTypes.length
+      ? existing.currentTypes
+      : Array.from(new Set(tubes.flat()));
+    currentExtraTubes = existing.currentExtraTubes || Math.max(1, tubes.filter((t) => t.length === 0).length);
+    startTimer();
+    syncMysteryButton();
+    updateLevelDisplay();
+    updateAddTubeButton();
+    renderBoard();
+    setStatus(`Resumed ${modeLabel(mode)} — Streak ${levels[mode]}.`);
+  }
+
+  function isStalePresetSave(mode, existing) {
+    if (mode === "custom") return false;
+    const preset = PRESETS[mode];
+    if (!preset) return false;
+    if (existing.capacity !== preset.copies || existing.neededPerType !== preset.copies) return true;
+    if ((existing.currentExtraTubes || 0) !== preset.extraTubes) return true;
+    return false;
+  }
+
+  function enterMode(mode) {
+    hideWinModal();
+    currentMode = mode;
+    let existing = savedGames[mode];
+    let hasProgress = !!(existing && existing.tubes && existing.tubes.length && !existing.solved);
+
+    if (hasProgress && isStalePresetSave(mode, existing)) {
+      clearSavedGame(mode);
+      existing = null;
+      hasProgress = false;
+    }
+
+    if (mode === "custom" && !hasProgress) {
+      populateCustomSettingsForm();
+      showSettingsPage();
+      return;
+    }
+
+    showGamePage();
+    $("editSettingsBtn").style.display = mode === "custom" ? "inline-block" : "none";
+    if (hasProgress) {
+      resumeSavedGame(mode, existing);
+    } else {
+      generatePuzzleForMode(mode);
+    }
+  }
+
+  function goHome() {
+    if (currentMode) {
+      pauseTimer();
+      if (!solved) saveGameState();
+    }
+    currentMode = null;
+    showHomePage();
+  }
+
+  function goHomeFromSettings() {
+    currentMode = null;
+    showHomePage();
+  }
+
+  function openCustomSettings() {
+    pauseTimer();
+    if (!solved) saveGameState();
+    populateCustomSettingsForm();
+    showSettingsPage();
+  }
+
+  // ---------- puzzle generation ----------
+  function generatePuzzleForMode(mode) {
+    hideWinModal();
+    let typesWanted, copies, cap, extra, iconPool;
+
+    if (mode === "custom") {
+      const setName = $("activeSetSelect").value || activeSetName;
+      activeSetName = setName;
+      persistActive();
+      iconPool = customSets[setName] || [];
+      if (iconPool.length < 2) { setStatus("Add at least 2 icons to your custom set first."); return; }
+      typesWanted = clamp(parseInt($("typesCount").value, 10) || 6, 2, Math.min(14, iconPool.length));
+      copies = clamp(parseInt($("countPerIcon").value, 10) || 4, 2, 20);
+      cap = copies;
+      extra = clamp(parseInt($("extraTubes").value, 10) || 2, 1, 4);
+      $("typesCount").value = typesWanted;
+      $("countPerIcon").value = copies; $("extraTubes").value = extra;
+      saveCustomSettings({ typesWanted, copies, extra, activeSetName });
+    } else {
+      const preset = PRESETS[mode];
+      iconPool = UNIQUE_POOL;
+      typesWanted = randInt(preset.typesMin, preset.typesMax);
+      copies = preset.copies;
+      cap = copies;
+      extra = preset.extraTubes;
+    }
+
+    const types = shuffle(iconPool.slice()).slice(0, typesWanted);
+    let items = [];
+    types.forEach((t) => { for (let i = 0; i < copies; i++) items.push(t); });
+    items = shuffle(items);
+
+    const fullTubesNeeded = Math.ceil(items.length / cap);
+    tubes = [];
+    for (let i = 0; i < fullTubesNeeded; i++) tubes.push(items.slice(i * cap, (i + 1) * cap));
+    for (let i = 0; i < Math.max(1, extra); i++) tubes.push([]);
+
+    capacity = cap;
+    neededPerType = copies;
+    currentTypes = types.slice();
+    currentExtraTubes = extra;
+    initialTubesSnapshot = JSON.parse(JSON.stringify(tubes));
+    history = [];
+    selectedIdx = null;
+    animatingCells = [];
+    solved = false;
+    mysteryMode = false;
+    revealedCells = new Set();
+    accumulatedMs = 0;
+    startTimer();
+    syncMysteryButton();
+    updateLevelDisplay();
+    setStatus(`${modeLabel(mode)} — Streak ${levels[mode]}: ${typesWanted} icons × ${copies}, ${tubes.length} tubes.`);
+    renderBoard();
+    updateAddTubeButton();
+    saveGameState();
+  }
+
+  // ---------- board rendering & interaction ----------
+  function renderBoard() {
+    const board = $("board");
+    board.innerHTML = "";
+    tubes.forEach((tube, idx) => {
+      const tubeEl = document.createElement("div");
+      tubeEl.className = "tube" + (selectedIdx === idx ? " selected" : "");
+      for (let i = 0; i < capacity; i++) {
+        const cell = document.createElement("div");
+        const val = tube[i];
+        const hide = animatingCells.some((c) => c.tubeIdx === idx && c.cellIdx === i);
+        const isTop = i === tube.length - 1;
+        const filled = !!val && !hide;
+        const key = idx + "-" + i;
+        if (mysteryMode && filled && isTop) revealedCells.add(key);
+        const masked = filled && mysteryMode && !revealedCells.has(key);
+        cell.className = "cell" + (filled ? " filled" : "") + (masked ? " mystery" : "");
+        cell.textContent = filled ? (masked ? "❓" : val) : "";
+        tubeEl.appendChild(cell);
+      }
+      tubeEl.addEventListener("click", () => onTubeClick(idx));
+      board.appendChild(tubeEl);
+    });
+    $("undoBtn").disabled = history.length === 0;
+  }
+
+  function planMove(from, to) {
+    if (from.length === 0) return null;
+    if (to.length >= capacity) return null;
+    const topVal = from[from.length - 1];
+    if (to.length > 0 && to[to.length - 1] !== topVal) return null;
+    let run = 1;
+    for (let i = from.length - 2; i >= 0; i--) { if (from[i] === topVal) run++; else break; }
+    const space = capacity - to.length;
+    const moveCount = Math.min(run, space);
+    return { value: topVal, moveCount };
+  }
+
+  function onTubeClick(idx) {
+    if (!currentMode || solved) return;
+    if (selectedIdx === null) {
+      if (tubes[idx].length === 0) return;
+      selectedIdx = idx;
+      renderBoard();
+      return;
+    }
+    if (selectedIdx === idx) { selectedIdx = null; renderBoard(); return; }
+
+    const fromIdx = selectedIdx;
+    const toIdx = idx;
+    const from = tubes[fromIdx];
+    const to = tubes[toIdx];
+
+    const plan = planMove(from, to);
+    if (!plan) {
+      selectedIdx = tubes[toIdx].length ? toIdx : null;
+      renderBoard();
+      return;
+    }
+
+    const { value, moveCount } = plan;
+    const originalFromLen = from.length;
+    const toStartIdx = to.length;
+    const board = $("board");
+
+    const fromCellEls = [];
+    const toCellEls = [];
+    for (let k = 0; k < moveCount; k++) {
+      fromCellEls.push(board.children[fromIdx].children[originalFromLen - 1 - k]);
+      toCellEls.push(board.children[toIdx].children[toStartIdx + k]);
+    }
+    const fromRects = fromCellEls.map((el) => el.getBoundingClientRect());
+    const toRects = toCellEls.map((el) => el.getBoundingClientRect());
+
+    for (let k = 0; k < moveCount; k++) to.push(from.pop());
+    history.push({ from: fromIdx, to: toIdx, count: moveCount });
+    selectedIdx = null;
+    animatingCells = [];
+    for (let k = 0; k < moveCount; k++) animatingCells.push({ tubeIdx: toIdx, cellIdx: toStartIdx + k });
+    renderBoard();
+
+    let completed = 0, settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      animatingCells = [];
+      renderBoard();
+      checkWin();
+    };
+
+    for (let k = 0; k < moveCount; k++) {
+      const clone = document.createElement("div");
+      clone.className = "flying-piece";
+      clone.textContent = value;
+      clone.style.left = fromRects[k].left + "px";
+      clone.style.top = fromRects[k].top + "px";
+      clone.style.width = fromRects[k].width + "px";
+      clone.style.height = fromRects[k].height + "px";
+      clone.style.transitionDelay = (k * 35) + "ms";
+      document.body.appendChild(clone);
+      requestAnimationFrame(() => {
+        clone.style.transform = `translate(${toRects[k].left - fromRects[k].left}px, ${toRects[k].top - fromRects[k].top}px)`;
+      });
+      const onDone = () => { clone.remove(); completed++; if (completed >= moveCount) finish(); };
+      clone.addEventListener("transitionend", onDone, { once: true });
+      setTimeout(onDone, 260 + k * 35);
+    }
+  }
+
+  function showWinModal(finalMs) {
+    $("winModalText").textContent = `Solved in ${formatTime(finalMs)} — ${modeLabel(currentMode)} Streak ${levels[currentMode]} awaits.`;
+    $("winModalBackdrop").style.display = "flex";
+  }
+  function hideWinModal() {
+    $("winModalBackdrop").style.display = "none";
+  }
+
+  function checkWin() {
+    const win = tubes.every((t) => t.length === 0 || (t.every((v) => v === t[0]) && t.length === neededPerType));
+    if (win) {
+      solved = true;
+      pauseTimer();
+      const finalMs = currentElapsedMs();
+      recordTime(currentMode, finalMs);
+      levels[currentMode] = (levels[currentMode] || 1) + 1;
+      saveLevels();
+      lifetimeWins += 1;
+      saveLifetimeWins();
+      clearSavedGame(currentMode);
+      updateLevelDisplay();
+      updateAddTubeButton();
+      homeLeaderboardMode = currentMode;
+      setStatus(`🎉 Solved in ${formatTime(finalMs)}!`, true);
+      showWinModal(finalMs);
+    } else {
+      saveGameState();
+    }
+  }
+
+  function undo() {
+    const last = history.pop();
+    if (!last) return;
+    const count = last.count || 1;
+    for (let k = 0; k < count; k++) {
+      const val = tubes[last.to].pop();
+      tubes[last.from].push(val);
+    }
+    selectedIdx = null;
+    renderBoard();
+    setStatus("Move undone.");
+    saveGameState();
+  }
+
+  function restartLevel() {
+    if (!initialTubesSnapshot) return;
+    tubes = JSON.parse(JSON.stringify(initialTubesSnapshot));
+    history = [];
+    selectedIdx = null;
+    animatingCells = [];
+    solved = false;
+    revealedCells = new Set();
+    accumulatedMs = 0;
+    startTimer();
+    renderBoard();
+    setStatus("Puzzle restarted — timer reset.");
+    saveGameState();
+  }
+
+  function shuffleRestart() {
+    if (!currentTypes.length) return;
+    let items = [];
+    currentTypes.forEach((t) => { for (let i = 0; i < neededPerType; i++) items.push(t); });
+    items = shuffle(items);
+    const fullTubesNeeded = Math.ceil(items.length / capacity);
+    tubes = [];
+    for (let i = 0; i < fullTubesNeeded; i++) tubes.push(items.slice(i * capacity, (i + 1) * capacity));
+    for (let i = 0; i < Math.max(1, currentExtraTubes); i++) tubes.push([]);
+    initialTubesSnapshot = JSON.parse(JSON.stringify(tubes));
+    history = [];
+    selectedIdx = null;
+    animatingCells = [];
+    solved = false;
+    revealedCells = new Set();
+    accumulatedMs = 0;
+    startTimer();
+    renderBoard();
+    setStatus("Deck reshuffled — same icons, brand-new layout.");
+    saveGameState();
+  }
+
+  function addTube() {
+    const avail = availableTubeTokens();
+    if (avail <= 0) {
+      setStatus("No bonus tubes earned yet — win 5 puzzles (any mode combined) to earn one.");
+      return;
+    }
+    tubeTokensUsed += 1;
+    saveTubeTokens();
+    tubes.push([]);
+    renderBoard();
+    updateAddTubeButton();
+    setStatus(`Added a bonus tube. ${availableTubeTokens()} left in your shared stash.`);
+    saveGameState();
+  }
+
+  function resetStreak() {
+    if (!currentMode) return;
+    const confirmed = window.confirm(
+      `Reset your ${modeLabel(currentMode)} streak back to 1? Your bonus tubes are safe — this only resets the streak count for this mode.`
+    );
+    if (!confirmed) return;
+    levels[currentMode] = 1;
+    saveLevels();
+    updateLevelDisplay();
+    setStatus(`${modeLabel(currentMode)} streak reset. Fresh start — Streak 1.`);
+  }
+
+  // ---------- event wiring ----------
+  document.querySelectorAll(".home-card").forEach((btn) => {
+    btn.addEventListener("click", () => enterMode(btn.dataset.mode));
+  });
+  document.querySelectorAll(".lb-tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      homeLeaderboardMode = btn.dataset.mode;
+      renderHomeLeaderboard();
+    });
+  });
+  $("backBtn").addEventListener("click", goHome);
+  $("settingsBackBtn").addEventListener("click", goHomeFromSettings);
+  $("editSettingsBtn").addEventListener("click", openCustomSettings);
+
+  $("saveSetBtn").addEventListener("click", async () => {
+    const name = $("setName").value.trim();
+    const emojis = parseEmojiInput($("setEmojis").value);
+    if (!name) { setStatus("Give your set a name first."); return; }
+    if (emojis.length < 2) { setStatus("Add at least 2 icons."); return; }
+    customSets[name] = emojis;
+    activeSetName = name;
+    await persistSets();
+    await persistActive();
+    renderSetList();
+    $("setName").value = "";
+    $("setEmojis").value = "";
+    setStatus(`Saved set "${name}" with ${emojis.length} icons.`);
+  });
+
+  $("useTypedBtn").addEventListener("click", () => {
+    const emojis = parseEmojiInput($("setEmojis").value);
+    if (emojis.length < 2) { setStatus("Type at least 2 icons first."); return; }
+    const tempName = "(unsaved)";
+    customSets[tempName] = emojis;
+    activeSetName = tempName;
+    renderSetList();
+    setStatus(`Using ${emojis.length} icons without saving.`);
+  });
+
+  $("randomizeBtn").addEventListener("click", () => {
+    let n = parseInt($("randomCount").value, 10) || 8;
+    n = clamp(n, 2, 14);
+    $("randomCount").value = n;
+    const picks = shuffle(RANDOM_POOL.slice()).slice(0, n);
+    $("setEmojis").value = picks.join(" ");
+    setStatus(`Rolled ${n} random icons — save them or use without saving.`);
+  });
+
+  $("activeSetSelect").addEventListener("change", async () => {
+    activeSetName = $("activeSetSelect").value;
+    await persistActive();
+    const maxTypes = customSets[activeSetName].length;
+    $("typesCount").max = maxTypes;
+    if (parseInt($("typesCount").value, 10) > maxTypes) $("typesCount").value = maxTypes;
+  });
+
+  $("newPuzzleBtn").addEventListener("click", () => {
+    generatePuzzleForMode("custom");
+    showGamePage();
+    $("editSettingsBtn").style.display = "inline-block";
+  });
+  $("undoBtn").addEventListener("click", undo);
+  $("nextPuzzleBtn").addEventListener("click", () => {
+    if (!currentMode) return;
+    generatePuzzleForMode(currentMode);
+  });
+  $("restartBtn").addEventListener("click", restartLevel);
+  $("shuffleBtn").addEventListener("click", shuffleRestart);
+  $("addTubeBtn").addEventListener("click", addTube);
+  $("resetStreakBtn").addEventListener("click", resetStreak);
+  $("winHomeBtn").addEventListener("click", () => {
+    hideWinModal();
+    goHome();
+  });
+  $("winNextBtn").addEventListener("click", () => {
+    hideWinModal();
+    generatePuzzleForMode(currentMode);
+  });
+  $("mysteryBtn").addEventListener("click", () => {
+    mysteryMode = !mysteryMode;
+    syncMysteryButton();
+    renderBoard();
+    saveGameState();
+  });
+
+  // ---------- tooltips (hover on desktop, long-press on mobile) ----------
+  function initTooltips() {
+    const bubble = $("tooltipBubble");
+    let longPressTimer = null;
+    let touchMoved = false;
+
+    function showTooltip(el, text) {
+      bubble.textContent = text;
+      bubble.style.display = "block";
+      const rect = el.getBoundingClientRect();
+      const bw = bubble.offsetWidth;
+      const bh = bubble.offsetHeight;
+      let left = rect.left + rect.width / 2 - bw / 2;
+      left = Math.max(8, Math.min(left, window.innerWidth - bw - 8));
+      let top = rect.top - bh - 8;
+      if (top < 8) top = rect.bottom + 8;
+      bubble.style.left = left + "px";
+      bubble.style.top = top + "px";
+    }
+    function hideTooltip() { bubble.style.display = "none"; }
+
+    document.querySelectorAll("[data-tooltip]").forEach((el) => {
+      el.addEventListener("mouseenter", () => showTooltip(el, el.getAttribute("data-tooltip")));
+      el.addEventListener("mouseleave", hideTooltip);
+
+      el.addEventListener("touchstart", () => {
+        touchMoved = false;
+        clearTimeout(longPressTimer);
+        longPressTimer = setTimeout(() => {
+          if (!touchMoved) showTooltip(el, el.getAttribute("data-tooltip"));
+        }, 450);
+      }, { passive: true });
+      el.addEventListener("touchmove", () => {
+        touchMoved = true;
+        clearTimeout(longPressTimer);
+        hideTooltip();
+      }, { passive: true });
+      el.addEventListener("touchend", () => {
+        clearTimeout(longPressTimer);
+        setTimeout(hideTooltip, 1200);
+      });
+      el.addEventListener("touchcancel", () => {
+        clearTimeout(longPressTimer);
+        hideTooltip();
+      });
+    });
+  }
+
+  // ---------- init ----------
+  (async function init() {
+    loadPersisted();
+    await loadSets();
+    renderSetList();
+    populateCustomSettingsForm();
+    initTooltips();
+    showHomePage();
+  })();
+})();
+</script>
+</body>
+</html>
