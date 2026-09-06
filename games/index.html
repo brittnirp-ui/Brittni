@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Games — Brittni Philippi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Poppins:ital,wght@0,300;0,400;0,600;1,600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #0d0d0d;
+      --panel: #161616;
+      --gold: #c9a84c;
+      --gold-dim: #7a6030;
+      --white: #f0ede8;
+      --muted: #888;
+    }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      padding: 5rem 2rem 3rem;
+    }
+
+    .back-link {
+      display: inline-block;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      margin-bottom: 2rem;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover {
+      color: var(--gold);
+    }
+
+    .section-label {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+
+    .page-heading {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.06em;
+      line-height: 1.15;
+    }
+
+    .page-tagline {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(0.95rem, 2.3vw, 1.05rem);
+      font-style: italic;
+      color: var(--muted);
+      max-width: 480px;
+      margin: 1.2rem auto 0;
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 2rem 6rem;
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .game-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.6rem;
+      background: var(--panel);
+      border: 1px solid #262626;
+      border-radius: 14px;
+      padding: 2.2rem 1.5rem;
+      text-decoration: none;
+      color: var(--white);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .game-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-3px);
+    }
+
+    .game-card-emoji {
+      font-size: 2.4rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .game-card-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .game-card-sub {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .coming-soon {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .coming-soon .game-card-sub {
+      font-style: italic;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-family: 'Poppins', sans-serif;
+    }
+
+    footer a {
+      color: var(--gold-dim);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      color: var(--gold);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="/#about" class="back-link">&larr; Back to Brittni.co</a>
+    <p class="section-label">Games</p>
+    <h1 class="page-heading">Just for fun</h1>
+    <p class="page-tagline">I've recently started getting into games too — little browser projects I build for fun. Pick one and play.</p>
+  </header>
+
+  <main>
+    <div class="game-grid">
+      <a href="emoji-sort/" class="game-card">
+        <span class="game-card-emoji">🧪</span>
+        <span class="game-card-title">Emoji Sort</span>
+        <span class="game-card-sub">Sort icons into tubes by color and type. Easy, Medium, Hard, and fully custom modes.</span>
+      </a>
+      <div class="game-card coming-soon">
+        <span class="game-card-emoji">✨</span>
+        <span class="game-card-title">More Soon</span>
+        <span class="game-card-sub">I'm always tinkering — check back for the next one.</span>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Made with &hearts; by <a href="https://brittni.co">brittni.co</a>
+  </footer>
+
+</body>
+</html>
