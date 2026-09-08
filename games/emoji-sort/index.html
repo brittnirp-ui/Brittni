@@ -25,6 +25,10 @@
     --accent: #7c4dff; --tube-empty: #221c2b; --danger: #c05a5a; --success: #6fae7c;
     --shadow: rgba(0,0,0,0.5);
   }
+  :root { --ui-scale: 1; }
+  @media (min-width: 768px) {
+    :root { --ui-scale: 2; }
+  }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
@@ -32,10 +36,10 @@
     min-height: 100vh; padding: 12px;
     padding-top: max(16px, env(safe-area-inset-top));
     padding-bottom: max(16px, env(safe-area-inset-bottom));
-    max-width: 720px; margin: 0 auto;
+    max-width: calc(720px * var(--ui-scale)); margin: 0 auto;
   }
-  h1 { font-size: 1.35rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--gold); margin: 4px 0 2px; text-align: center; }
-  .subtitle { text-align: center; color: var(--text-dim); font-size: 0.8rem; margin-bottom: 16px; }
+  h1 { font-size: calc(1.35rem * var(--ui-scale)); letter-spacing: 0.04em; text-transform: uppercase; color: var(--gold); margin: 4px 0 2px; text-align: center; }
+  .subtitle { text-align: center; color: var(--text-dim); font-size: calc(0.8rem * var(--ui-scale)); margin-bottom: 16px; }
   .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 14px; box-shadow: 0 4px 14px var(--shadow); }
   .panel h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold-dim); margin: 0 0 10px; }
   .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
@@ -80,7 +84,7 @@
   .status-bar {
     display: flex; justify-content: space-between; align-items: center;
     background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-    padding: 7px 12px; margin-bottom: 8px; font-size: 0.82rem;
+    padding: calc(7px * var(--ui-scale)) calc(12px * var(--ui-scale)); margin-bottom: 8px; font-size: calc(0.82rem * var(--ui-scale));
   }
   #levelLabel { color: var(--gold-dim); font-weight: 600; }
   #timerDisplay { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); letter-spacing: 0.03em; }
@@ -97,7 +101,7 @@
 
   .controls { display: flex; gap: 7px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
   .ctrl-btn {
-    padding: 8px 15px; font-size: 0.74rem; font-weight: 700;
+    padding: calc(8px * var(--ui-scale)) calc(15px * var(--ui-scale)); font-size: calc(0.74rem * var(--ui-scale)); font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.04em;
     border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 3px;
     transition: border-color 0.15s, color 0.15s, transform 0.1s;
@@ -107,35 +111,35 @@
   .tooltip-bubble {
     position: fixed; z-index: 3000; background: var(--panel-2); color: var(--text);
     border: 1px solid var(--gold-dim); border-radius: 8px; padding: 8px 10px;
-    font-size: 0.76rem; max-width: 210px; text-align: center; pointer-events: none;
+    font-size: calc(0.76rem * var(--ui-scale)); max-width: calc(210px * var(--ui-scale)); text-align: center; pointer-events: none;
     box-shadow: 0 6px 18px var(--shadow); line-height: 1.3;
   }
-  .board { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 5px; justify-content: center; padding: 6px 0 10px; }
+  .board { display: flex; flex-wrap: wrap; align-items: flex-start; gap: calc(5px * var(--ui-scale)); justify-content: center; padding: 6px 0 10px; }
   .tube {
-    width: 40px; background: var(--tube-empty); border: 2px solid var(--border);
+    width: calc(40px * var(--ui-scale)); background: var(--tube-empty); border: 2px solid var(--border);
     border-radius: 8px 8px 13px 13px; display: flex; flex-direction: column-reverse;
     padding: 4px 3px; gap: 3px; cursor: pointer; transition: border-color 0.15s, transform 0.1s;
   }
   .tube.selected { border-color: var(--gold); transform: translateY(-3px); box-shadow: 0 4px 12px var(--shadow); }
-  .tube .cell { height: 28px; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; border-radius: 5px; transition: background-color 0.15s; }
+  .tube .cell { height: calc(28px * var(--ui-scale)); display: flex; align-items: center; justify-content: center; font-size: calc(1.05rem * var(--ui-scale)); border-radius: 5px; transition: background-color 0.15s; }
   .tube .cell.filled { background: var(--panel-2); }
-  .tube .cell.mystery { color: var(--text-dim); font-size: 1.3rem; }
+  .tube .cell.mystery { color: var(--text-dim); font-size: calc(1.3rem * var(--ui-scale)); }
   .flying-piece {
     position: fixed; display: flex; align-items: center; justify-content: center;
-    font-size: 1.6rem; background: var(--panel-2); border-radius: 6px;
+    font-size: calc(1.6rem * var(--ui-scale)); background: var(--panel-2); border-radius: 6px;
     pointer-events: none; z-index: 1000; transition: transform 0.2s cubic-bezier(0.3, 0.7, 0.3, 1);
     will-change: transform;
   }
-  .pockets-row { display: none; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 2px 0 8px; }
+  .pockets-row { display: none; flex-wrap: wrap; gap: calc(8px * var(--ui-scale)); justify-content: center; margin: 2px 0 8px; }
   .pocket {
-    width: 40px; height: 40px; background: var(--tube-empty); border: 2px dashed var(--border);
+    width: calc(40px * var(--ui-scale)); height: calc(40px * var(--ui-scale)); background: var(--tube-empty); border: 2px dashed var(--border);
     border-radius: 10px; display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem; cursor: pointer; transition: border-color 0.15s, transform 0.1s;
+    font-size: calc(1.3rem * var(--ui-scale)); cursor: pointer; transition: border-color 0.15s, transform 0.1s;
   }
   .pocket.filled { border-style: solid; background: var(--panel-2); }
   .pocket.selected { border-color: var(--gold); transform: translateY(-3px); box-shadow: 0 4px 12px var(--shadow); }
-  .status { text-align: center; min-height: 16px; font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
-  .status.win { color: var(--success); font-weight: 700; font-size: 1rem; }
+  .status { text-align: center; min-height: 16px; font-size: calc(0.78rem * var(--ui-scale)); color: var(--text-dim); margin-top: 2px; }
+  .status.win { color: var(--success); font-weight: 700; font-size: calc(1rem * var(--ui-scale)); }
   .storage-note { text-align: center; font-size: 0.7rem; color: var(--text-dim); opacity: 0.6; margin-top: 2px; }
 
   .lb-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
@@ -147,14 +151,14 @@
   }
   .modal-card {
     background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
-    padding: 24px 20px; max-width: 320px; width: 100%; text-align: center;
+    padding: 24px 20px; max-width: calc(320px * var(--ui-scale)); width: 100%; text-align: center;
     box-shadow: 0 10px 30px var(--shadow);
   }
-  .modal-emoji { font-size: 2.2rem; margin-bottom: 4px; }
-  .modal-card h2 { color: var(--success); margin: 0 0 8px; font-size: 1.3rem; text-transform: none; letter-spacing: normal; }
-  .modal-card p { color: var(--text-dim); font-size: 0.9rem; margin: 0 0 18px; }
+  .modal-emoji { font-size: calc(2.2rem * var(--ui-scale)); margin-bottom: 4px; }
+  .modal-card h2 { color: var(--success); margin: 0 0 8px; font-size: calc(1.3rem * var(--ui-scale)); text-transform: none; letter-spacing: normal; }
+  .modal-card p { color: var(--text-dim); font-size: calc(0.9rem * var(--ui-scale)); margin: 0 0 18px; }
   .modal-buttons { display: flex; gap: 10px; }
-  .modal-buttons button { flex: 1; padding: 11px 8px; font-size: 0.9rem; }
+  .modal-buttons button { flex: 1; padding: 11px 8px; font-size: calc(0.9rem * var(--ui-scale)); }
   .lb-tab { flex: 1; padding: 8px 4px; font-size: 0.8rem; text-align: center; }
   .lb-tab.active { background: linear-gradient(135deg, var(--gold-dim), var(--gold)); color: #1a1420; border: none; font-weight: 700; }
 
