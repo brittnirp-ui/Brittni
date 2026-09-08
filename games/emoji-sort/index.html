@@ -126,6 +126,14 @@
     pointer-events: none; z-index: 1000; transition: transform 0.2s cubic-bezier(0.3, 0.7, 0.3, 1);
     will-change: transform;
   }
+  .pockets-row { display: none; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 2px 0 8px; }
+  .pocket {
+    width: 40px; height: 40px; background: var(--tube-empty); border: 2px dashed var(--border);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; cursor: pointer; transition: border-color 0.15s, transform 0.1s;
+  }
+  .pocket.filled { border-style: solid; background: var(--panel-2); }
+  .pocket.selected { border-color: var(--gold); transform: translateY(-3px); box-shadow: 0 4px 12px var(--shadow); }
   .status { text-align: center; min-height: 16px; font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
   .status.win { color: var(--success); font-weight: 700; font-size: 1rem; }
   .storage-note { text-align: center; font-size: 0.7rem; color: var(--text-dim); opacity: 0.6; margin-top: 2px; }
@@ -267,11 +275,13 @@
     <button id="restartBtn" class="ctrl-btn" title="Restart Puzzle" data-tooltip="Restart Puzzle — reset the board to its starting layout, timer resets">Restart</button>
     <button id="shuffleBtn" class="ctrl-btn" title="Shuffle Restart" data-tooltip="Shuffle Restart — same icons and tube count, freshly reshuffled">Shuffle</button>
     <button id="addTubeBtn" class="ctrl-btn" title="Bonus Tube" data-tooltip="Bonus Tube — spend an earned tube to add an extra empty tube">Tubes <span id="tubeCount">0</span></button>
+    <button id="addPocketBtn" class="ctrl-btn" title="Add Pocket" data-tooltip="Add Pocket — a small slot to set one emoji aside while you sort (up to 3 per puzzle)">Pocket <span id="pocketCount">0</span>/3</button>
     <button id="mysteryBtn" class="ctrl-btn" title="Mystery Mode" data-tooltip="Mystery Mode — hides buried icons until they reach the top">Mystery</button>
     <button id="resetStreakBtn" class="ctrl-btn danger" title="Reset Streak" data-tooltip="Reset Streak — start this mode's streak back at 1 (bonus tubes unaffected)">Reset</button>
   </div>
 
   <div class="status" id="status"></div>
+  <div class="pockets-row" id="pocketsRow"></div>
   <div class="board" id="board"></div>
 </div>
 
@@ -327,6 +337,7 @@ const AppStorage = (function () {
     medium: { typesMin: 6, typesMax: 7,  copies: 4, extraTubes: 2 },
     hard:   { typesMin: 9, typesMax: 10, copies: 5, extraTubes: 2 }
   };
+  const MAX_POCKETS = 3;
 
   let customSets = {};
   let activeSetName = null;
@@ -347,6 +358,8 @@ const AppStorage = (function () {
   let currentTypes = [];
   let currentExtraTubes = 1;
   let selectedIdx = null;
+  let pockets = [];
+  let selectedPocketIdx = null;
   let history = [];
   let animatingCells = [];
   let mysteryMode = false;
@@ -498,7 +511,7 @@ const AppStorage = (function () {
     savedGames[currentMode] = {
       tubes, capacity, neededPerType, initialTubesSnapshot, mysteryMode, solved,
       revealedCells: Array.from(revealedCells),
-      currentTypes, currentExtraTubes,
+      currentTypes, currentExtraTubes, pockets,
       elapsedMs: currentElapsedMs()
     };
     persistSavedGames();
@@ -618,6 +631,8 @@ const AppStorage = (function () {
     solved = false;
     history = [];
     selectedIdx = null;
+    selectedPocketIdx = null;
+    pockets = existing.pockets || [];
     animatingCells = [];
     accumulatedMs = existing.elapsedMs || 0;
     currentTypes = existing.currentTypes && existing.currentTypes.length
@@ -628,7 +643,9 @@ const AppStorage = (function () {
     syncMysteryButton();
     updateLevelDisplay();
     updateAddTubeButton();
+    updatePocketButton();
     renderBoard();
+    renderPockets();
     setStatus(`Resumed ${modeLabel(mode)} — Streak ${levels[mode]}.`);
   }
 
@@ -733,6 +750,8 @@ const AppStorage = (function () {
     initialTubesSnapshot = JSON.parse(JSON.stringify(tubes));
     history = [];
     selectedIdx = null;
+    selectedPocketIdx = null;
+    pockets = [];
     animatingCells = [];
     solved = false;
     mysteryMode = false;
@@ -743,7 +762,9 @@ const AppStorage = (function () {
     updateLevelDisplay();
     setStatus(`${modeLabel(mode)} — Streak ${levels[mode]}: ${typesWanted} icons × ${copies}, ${tubes.length} tubes.`);
     renderBoard();
+    renderPockets();
     updateAddTubeButton();
+    updatePocketButton();
     saveGameState();
   }
 
@@ -773,6 +794,34 @@ const AppStorage = (function () {
     $("undoBtn").disabled = history.length === 0;
   }
 
+  function renderPockets() {
+    const row = $("pocketsRow");
+    row.innerHTML = "";
+    pockets.forEach((val, idx) => {
+      const el = document.createElement("div");
+      el.className = "pocket" + (val ? " filled" : "") + (selectedPocketIdx === idx ? " selected" : "");
+      el.textContent = val || "";
+      el.addEventListener("click", () => onPocketClick(idx));
+      row.appendChild(el);
+    });
+    row.style.display = pockets.length ? "flex" : "none";
+  }
+
+  function updatePocketButton() {
+    if (!currentMode) return;
+    $("pocketCount").textContent = pockets.length;
+    $("addPocketBtn").disabled = pockets.length >= MAX_POCKETS;
+  }
+
+  function addPocket() {
+    if (pockets.length >= MAX_POCKETS) return;
+    pockets.push(null);
+    renderPockets();
+    updatePocketButton();
+    setStatus(`Added a pocket slot. ${pockets.length}/${MAX_POCKETS} unlocked.`);
+    saveGameState();
+  }
+
   function planMove(from, to) {
     if (from.length === 0) return null;
     if (to.length >= capacity) return null;
@@ -785,8 +834,60 @@ const AppStorage = (function () {
     return { value: topVal, moveCount };
   }
 
+  function onPocketClick(idx) {
+    if (!currentMode || solved) return;
+    if (selectedIdx !== null) {
+      tryMoveTubeToPocket(selectedIdx, idx);
+      return;
+    }
+    if (selectedPocketIdx === idx) { selectedPocketIdx = null; renderPockets(); return; }
+    selectedPocketIdx = pockets[idx] !== null ? idx : null;
+    renderPockets();
+  }
+
+  function tryMoveTubeToPocket(fromIdx, pocketIdx) {
+    const from = tubes[fromIdx];
+    if (from.length === 0 || pockets[pocketIdx] !== null) {
+      selectedIdx = null;
+      renderBoard();
+      return;
+    }
+    pockets[pocketIdx] = from.pop();
+    history.push({ fromType: "tube", fromIdx, toType: "pocket", toIdx: pocketIdx, count: 1 });
+    selectedIdx = null;
+    renderBoard();
+    renderPockets();
+    saveGameState();
+    checkWin();
+  }
+
+  function tryMoveFromPocketToTube(pocketIdx, toIdx) {
+    const val = pockets[pocketIdx];
+    const dest = tubes[toIdx];
+    const fits = val !== null && dest.length < capacity && (dest.length === 0 || dest[dest.length - 1] === val);
+    if (!fits) {
+      selectedPocketIdx = null;
+      selectedIdx = tubes[toIdx].length ? toIdx : null;
+      renderBoard();
+      renderPockets();
+      return;
+    }
+    pockets[pocketIdx] = null;
+    dest.push(val);
+    history.push({ fromType: "pocket", fromIdx: pocketIdx, toType: "tube", toIdx, count: 1 });
+    selectedPocketIdx = null;
+    renderBoard();
+    renderPockets();
+    saveGameState();
+    checkWin();
+  }
+
   function onTubeClick(idx) {
     if (!currentMode || solved) return;
+    if (selectedPocketIdx !== null) {
+      tryMoveFromPocketToTube(selectedPocketIdx, idx);
+      return;
+    }
     if (selectedIdx === null) {
       if (tubes[idx].length === 0) return;
       selectedIdx = idx;
@@ -822,7 +923,7 @@ const AppStorage = (function () {
     const toRects = toCellEls.map((el) => el.getBoundingClientRect());
 
     for (let k = 0; k < moveCount; k++) to.push(from.pop());
-    history.push({ from: fromIdx, to: toIdx, count: moveCount });
+    history.push({ fromType: "tube", fromIdx, toType: "tube", toIdx, count: moveCount });
     selectedIdx = null;
     animatingCells = [];
     for (let k = 0; k < moveCount; k++) animatingCells.push({ tubeIdx: toIdx, cellIdx: toStartIdx + k });
@@ -865,7 +966,9 @@ const AppStorage = (function () {
   }
 
   function checkWin() {
-    const win = tubes.every((t) => t.length === 0 || (t.every((v) => v === t[0]) && t.length === neededPerType));
+    const tubesSorted = tubes.every((t) => t.length === 0 || (t.every((v) => v === t[0]) && t.length === neededPerType));
+    const pocketsEmpty = pockets.every((v) => v === null);
+    const win = tubesSorted && pocketsEmpty;
     if (win) {
       solved = true;
       pauseTimer();
@@ -889,13 +992,21 @@ const AppStorage = (function () {
   function undo() {
     const last = history.pop();
     if (!last) return;
+    const fromType = last.fromType || "tube";
+    const toType = last.toType || "tube";
+    const fromIdx = last.fromIdx !== undefined ? last.fromIdx : last.from;
+    const toIdx = last.toIdx !== undefined ? last.toIdx : last.to;
     const count = last.count || 1;
     for (let k = 0; k < count; k++) {
-      const val = tubes[last.to].pop();
-      tubes[last.from].push(val);
+      const val = toType === "pocket" ? pockets[toIdx] : tubes[toIdx].pop();
+      if (toType === "pocket") pockets[toIdx] = null;
+      if (fromType === "pocket") pockets[fromIdx] = val;
+      else tubes[fromIdx].push(val);
     }
     selectedIdx = null;
+    selectedPocketIdx = null;
     renderBoard();
+    renderPockets();
     setStatus("Move undone.");
     saveGameState();
   }
@@ -905,12 +1016,16 @@ const AppStorage = (function () {
     tubes = JSON.parse(JSON.stringify(initialTubesSnapshot));
     history = [];
     selectedIdx = null;
+    selectedPocketIdx = null;
+    pockets = [];
     animatingCells = [];
     solved = false;
     revealedCells = new Set();
     accumulatedMs = 0;
     startTimer();
     renderBoard();
+    renderPockets();
+    updatePocketButton();
     setStatus("Puzzle restarted — timer reset.");
     saveGameState();
   }
@@ -927,12 +1042,16 @@ const AppStorage = (function () {
     initialTubesSnapshot = JSON.parse(JSON.stringify(tubes));
     history = [];
     selectedIdx = null;
+    selectedPocketIdx = null;
+    pockets = [];
     animatingCells = [];
     solved = false;
     revealedCells = new Set();
     accumulatedMs = 0;
     startTimer();
     renderBoard();
+    renderPockets();
+    updatePocketButton();
     setStatus("Deck reshuffled — same icons, brand-new layout.");
     saveGameState();
   }
@@ -1033,6 +1152,7 @@ const AppStorage = (function () {
   $("restartBtn").addEventListener("click", restartLevel);
   $("shuffleBtn").addEventListener("click", shuffleRestart);
   $("addTubeBtn").addEventListener("click", addTube);
+  $("addPocketBtn").addEventListener("click", addPocket);
   $("resetStreakBtn").addEventListener("click", resetStreak);
   $("winHomeBtn").addEventListener("click", () => {
     hideWinModal();
