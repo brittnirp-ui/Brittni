@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>Wire Works</title>
+<style>
+  :root {
+    --bg: #0a0d0c; --panel: #121614; --panel-2: #1a201d; --border: #263029;
+    --gold: #c9a84c; --gold-dim: #8a7238; --text: #ece6e0; --text-dim: #9aa39c;
+    --copper: #8a5a3a; --copper-dim: #4d3a2a; --live: #ffd166; --danger: #c05a5a; --success: #6fae7c;
+    --shadow: rgba(0,0,0,0.5);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f2efe6; --panel: #ffffff; --panel-2: #ece7d8; --border: #d8d0ba;
+      --gold: #a1791f; --gold-dim: #c2a24f; --text: #241d1a; --text-dim: #665f52;
+      --copper: #a06840; --copper-dim: #cbb08e; --live: #d98f00; --danger: #b0453f; --success: #3f7d4e;
+      --shadow: rgba(0,0,0,0.15);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0a0d0c; --panel: #121614; --panel-2: #1a201d; --border: #263029;
+    --gold: #c9a84c; --gold-dim: #8a7238; --text: #ece6e0; --text-dim: #9aa39c;
+    --copper: #8a5a3a; --copper-dim: #4d3a2a; --live: #ffd166; --danger: #c05a5a; --success: #6fae7c;
+    --shadow: rgba(0,0,0,0.5);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh; padding: 14px;
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+    max-width: 620px; margin: 0 auto;
+  }
+  .back-link {
+    display: inline-block; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-dim); text-decoration: none; margin-bottom: 10px;
+  }
+  .back-link:hover { color: var(--gold); }
+  h1 {
+    font-size: 1.5rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--gold);
+    margin: 4px 0 2px; text-align: center;
+  }
+  .subtitle { text-align: center; color: var(--text-dim); font-size: 0.82rem; margin-bottom: 16px; line-height: 1.5; }
+
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 14px; box-shadow: 0 4px 14px var(--shadow); }
+
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; }
+  select, button {
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    padding: 9px 14px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; white-space: nowrap;
+  }
+  select:focus { outline: 1px solid var(--gold-dim); }
+  button:active { transform: translateY(1px); }
+  button.primary { background: linear-gradient(135deg, var(--gold-dim), var(--gold)); color: #1a1410; border: none; font-weight: 700; }
+
+  .stats { display: flex; justify-content: center; gap: 22px; margin-top: 12px; font-size: 0.85rem; color: var(--text-dim); }
+  .stats b { color: var(--gold); font-variant-numeric: tabular-nums; }
+
+  .board-wrap { display: flex; justify-content: center; margin-bottom: 14px; }
+  .board {
+    display: grid;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 6px 20px var(--shadow);
+    width: min(94vw, 480px);
+    aspect-ratio: 1 / 1;
+  }
+  .cell {
+    position: relative;
+    border-radius: 4px;
+  }
+  .tile {
+    position: absolute; inset: 2px;
+    cursor: pointer;
+  }
+  .terminal .tile-inner { cursor: default; }
+  .stub {
+    position: absolute;
+    background: var(--copper);
+    transition: background 0.15s;
+  }
+  .stub.n { left: 46%; top: 0; width: 8%; height: 52%; }
+  .stub.s { left: 46%; bottom: 0; width: 8%; height: 52%; }
+  .stub.e { top: 46%; right: 0; height: 8%; width: 52%; }
+  .stub.w { top: 46%; left: 0; height: 8%; width: 52%; }
+  .hub {
+    position: absolute; left: 32%; top: 32%; width: 36%; height: 36%;
+    border-radius: 50%; background: var(--copper);
+    transition: background 0.15s, box-shadow 0.2s;
+  }
+  .cell.live .stub, .cell.live .hub { background: var(--live); box-shadow: 0 0 8px var(--live), 0 0 2px var(--live); }
+
+  .terminal-icon {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    font-size: 1.4rem; z-index: 2; line-height: 1;
+  }
+  .cell.terminal .hub, .cell.terminal .stub { background: var(--copper-dim); }
+  .cell.terminal.live .hub, .cell.terminal.live .stub { background: var(--live); box-shadow: 0 0 8px var(--live); }
+
+  .device-cell.on .terminal-icon { filter: drop-shadow(0 0 6px var(--live)); }
+  .device-cell.on.fan .terminal-icon { animation: spin 0.6s linear infinite; }
+  .device-cell.on.bulb .terminal-icon { animation: pulse 1.1s ease-in-out infinite; }
+  .device-cell.on.tv .terminal-icon, .device-cell.on.radio .terminal-icon, .device-cell.on.heater .terminal-icon, .device-cell.on.computer .terminal-icon {
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes spin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+  .win-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.72);
+    display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px;
+  }
+  .win-overlay.show { display: flex; }
+  .win-card {
+    background: var(--panel); border: 1px solid var(--gold-dim); border-radius: 16px;
+    padding: 28px 24px; max-width: 340px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .win-card .emoji { font-size: 2.6rem; margin-bottom: 8px; }
+  .win-card h2 { color: var(--gold); margin: 0 0 6px; letter-spacing: 0.03em; }
+  .win-card p { color: var(--text-dim); font-size: 0.88rem; margin: 4px 0 16px; }
+  .win-card .best { color: var(--gold-dim); font-size: 0.78rem; margin-bottom: 16px; }
+
+  footer { text-align: center; padding: 10px 0 0; font-size: 0.78rem; color: var(--text-dim); }
+  footer a { color: var(--gold-dim); text-decoration: none; }
+  footer a:hover { color: var(--gold); text-decoration: underline; }
+</style>
+</head>
+<body>
+
+  <a href="../" class="back-link">&larr; Back to Games</a>
+  <h1>Wire Works</h1>
+  <p class="subtitle">Rotate the wires to connect the plug to the appliance and switch it on. A fresh board every round.</p>
+
+  <div class="panel">
+    <div class="row">
+      <select id="difficulty">
+        <option value="easy">Easy (5×5)</option>
+        <option value="medium" selected>Medium (7×7)</option>
+        <option value="hard">Hard (9×9)</option>
+      </select>
+      <button id="newPuzzleBtn" class="primary">New Puzzle</button>
+    </div>
+    <div class="stats">
+      <span>Moves: <b id="moveCount">0</b></span>
+      <span>Time: <b id="timeCount">0:00</b></span>
+    </div>
+  </div>
+
+  <div class="board-wrap">
+    <div class="board" id="board"></div>
+  </div>
+
+  <footer>
+    Made with &hearts; by <a href="https://brittni.co">brittni.co</a>
+  </footer>
+
+  <div class="win-overlay" id="winOverlay">
+    <div class="win-card">
+      <div class="emoji" id="winEmoji">💡</div>
+      <h2 id="winTitle">Powered up!</h2>
+      <p id="winStats"></p>
+      <p class="best" id="winBest"></p>
+      <button class="primary" id="playAgainBtn">New Puzzle</button>
+    </div>
+  </div>
+
+<script>
+(function () {
+  var DIRS = [
+    { dr: -1, dc: 0, dir: 'N', opp: 'S' },
+    { dr: 0, dc: 1, dir: 'E', opp: 'W' },
+    { dr: 1, dc: 0, dir: 'S', opp: 'N' },
+    { dr: 0, dc: -1, dir: 'W', opp: 'E' }
+  ];
+  var ORDER = ['N', 'E', 'S', 'W'];
+
+  var DEVICES = [
+    { key: 'bulb', on: '💡', off: '💡', name: 'the light' },
+    { key: 'fan', on: '🌀', off: '🌀', name: 'the fan' },
+    { key: 'tv', on: '📺', off: '📺', name: 'the TV' },
+    { key: 'radio', on: '📻', off: '📻', name: 'the radio' },
+    { key: 'heater', on: '🔥', off: '🔥', name: 'the heater' },
+    { key: 'computer', on: '🖥️', off: '🖥️', name: 'the computer' }
+  ];
+
+  var DIFFICULTIES = {
+    easy: { size: 5, shapes: [
+      { dirs: ['N'], w: 3 }, { dirs: ['N', 'S'], w: 4 }, { dirs: ['N', 'E'], w: 4 }, { dirs: ['N', 'E', 'S'], w: 1 }
+    ] },
+    medium: { size: 7, shapes: [
+      { dirs: ['N'], w: 2 }, { dirs: ['N', 'S'], w: 4 }, { dirs: ['N', 'E'], w: 4 }, { dirs: ['N', 'E', 'S'], w: 2 }, { dirs: ['N', 'E', 'S', 'W'], w: 1 }
+    ] },
+    hard: { size: 9, shapes: [
+      { dirs: ['N'], w: 2 }, { dirs: ['N', 'S'], w: 3 }, { dirs: ['N', 'E'], w: 4 }, { dirs: ['N', 'E', 'S'], w: 3 }, { dirs: ['N', 'E', 'S', 'W'], w: 2 }
+    ] }
+  };
+
+  var state = null;
+  var timerHandle = null;
+
+  function emptyConns() { return { N: false, E: false, S: false, W: false }; }
+
+  function rotateCW(conns) {
+    return { N: conns.W, E: conns.N, S: conns.E, W: conns.S };
+  }
+
+  function dirsToConns(dirs) {
+    var c = emptyConns();
+    dirs.forEach(function (d) { c[d] = true; });
+    return c;
+  }
+
+  function pickWeighted(shapes) {
+    var total = shapes.reduce(function (s, x) { return s + x.w; }, 0);
+    var r = Math.random() * total;
+    for (var i = 0; i < shapes.length; i++) {
+      r -= shapes[i].w;
+      if (r <= 0) return shapes[i];
+    }
+    return shapes[shapes.length - 1];
+  }
+
+  function randomShapeConns(shapes) {
+    var shape = pickWeighted(shapes);
+    var c = dirsToConns(shape.dirs);
+    var spins = Math.floor(Math.random() * 4);
+    for (var i = 0; i < spins; i++) c = rotateCW(c);
+    return c;
+  }
+
+  function key(r, c) { return r + ',' + c; }
+
+  function buildPath(rows, cols, start, end) {
+    var visited = {};
+    visited[key(start[0], start[1])] = true;
+    var stack = [start];
+
+    function dist(r, c) { return Math.abs(r - end[0]) + Math.abs(c - end[1]); }
+
+    function shuffledNeighbors(r, c) {
+      var list = DIRS.map(function (d) {
+        return { r: r + d.dr, c: c + d.dc, dir: d.dir };
+      }).filter(function (p) { return p.r >= 0 && p.r < rows && p.c >= 0 && p.c < cols; });
+      // bias toward the target, with randomness so paths still wander
+      list.sort(function (a, b) { return dist(a.r, a.c) - dist(b.r, b.c); });
+      for (var i = list.length - 1; i > 0; i--) {
+        if (Math.random() < 0.55) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var t = list[i]; list[i] = list[j]; list[j] = t;
+        }
+      }
+      return list;
+    }
+
+    var guard = 0;
+    while (stack.length && guard++ < rows * cols * 8) {
+      var top = stack[stack.length - 1];
+      if (top[0] === end[0] && top[1] === end[1]) break;
+      var nbrs = shuffledNeighbors(top[0], top[1]).filter(function (p) {
+        return !visited[key(p.r, p.c)];
+      });
+      if (!nbrs.length) { stack.pop(); continue; }
+      var pick = nbrs[0];
+      visited[key(pick.r, pick.c)] = true;
+      stack.push([pick.r, pick.c]);
+    }
+    return stack;
+  }
+
+  function dirBetween(a, b) {
+    if (b[0] === a[0] - 1) return 'N';
+    if (b[0] === a[0] + 1) return 'S';
+    if (b[1] === a[1] + 1) return 'E';
+    return 'W';
+  }
+  function opposite(d) { return { N: 'S', S: 'N', E: 'W', W: 'E' }[d]; }
+
+  function generateBoard(size, shapes) {
+    var rows = size, cols = size;
+    var srcRow = 1 + Math.floor(Math.random() * (rows - 2));
+    var devRow = 1 + Math.floor(Math.random() * (rows - 2));
+    var source = [srcRow, 0];
+    var device = [devRow, cols - 1];
+
+    var path = buildPath(rows, cols, source, device);
+    if (path.length < 2 || path[path.length - 1][0] !== device[0] || path[path.length - 1][1] !== device[1]) {
+      return null; // failed generation, caller retries
+    }
+
+    var board = [];
+    for (var r = 0; r < rows; r++) {
+      var rowArr = [];
+      for (var c = 0; c < cols; c++) {
+        rowArr.push({ type: 'decoy', conns: randomShapeConns(shapes), solved: null });
+      }
+      board.push(rowArr);
+    }
+
+    var pathSet = {};
+    path.forEach(function (p) { pathSet[key(p[0], p[1])] = true; });
+
+    // source terminal
+    var firstDir = dirBetween(source, path[1]);
+    board[source[0]][source[1]] = { type: 'source', conns: dirsToConns([firstDir]), rotatable: false };
+
+    // device terminal
+    var lastDir = opposite(dirBetween(path[path.length - 2], device));
+    var device_ = DEVICES[Math.floor(Math.random() * DEVICES.length)];
+    board[device[0]][device[1]] = { type: 'device', conns: dirsToConns([lastDir]), rotatable: false, device: device_ };
+
+    // intermediate path cells get exact solved connections, then get scrambled
+    for (var i = 1; i < path.length - 1; i++) {
+      var prev = path[i - 1], cur = path[i], next = path[i + 1];
+      var dIn = opposite(dirBetween(prev, cur));
+      var dOut = dirBetween(cur, next);
+      var solved = dirsToConns([dIn, dOut]);
+      var spins = 1 + Math.floor(Math.random() * 3); // guarantee at least one rotation needed
+      var scrambled = solved;
+      for (var s = 0; s < spins; s++) scrambled = rotateCW(scrambled);
+      board[cur[0]][cur[1]] = { type: 'path', conns: scrambled, solved: solved, rotatable: true };
+    }
+
+    return { rows: rows, cols: cols, board: board, source: source, device: device, deviceInfo: device_ };
+  }
+
+  function generatePuzzle(difficultyKey) {
+    var cfg = DIFFICULTIES[difficultyKey];
+    var attempt = null;
+    for (var tries = 0; tries < 40 && !attempt; tries++) {
+      attempt = generateBoard(cfg.size, cfg.shapes);
+    }
+    if (!attempt) { attempt = generateBoard(cfg.size, cfg.shapes) || generateBoard(cfg.size, cfg.shapes); }
+    return attempt;
+  }
+
+  function computeLive(puzzle) {
+    var rows = puzzle.rows, cols = puzzle.cols, board = puzzle.board;
+    var seen = {};
+    var startKey = key(puzzle.source[0], puzzle.source[1]);
+    seen[startKey] = true;
+    var stack = [puzzle.source];
+    while (stack.length) {
+      var cur = stack.pop();
+      var r = cur[0], c = cur[1];
+      var cell = board[r][c];
+      for (var i = 0; i < DIRS.length; i++) {
+        var d = DIRS[i];
+        if (!cell.conns[d.dir]) continue;
+        var nr = r + d.dr, nc = c + d.dc;
+        if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+        var ncell = board[nr][nc];
+        if (!ncell.conns[d.opp]) continue;
+        var k = key(nr, nc);
+        if (!seen[k]) { seen[k] = true; stack.push([nr, nc]); }
+      }
+    }
+    return seen;
+  }
+
+  function render() {
+    var boardEl = document.getElementById('board');
+    boardEl.innerHTML = '';
+    boardEl.style.gridTemplateColumns = 'repeat(' + state.puzzle.cols + ', 1fr)';
+    boardEl.style.gridTemplateRows = 'repeat(' + state.puzzle.rows + ', 1fr)';
+
+    var live = computeLive(state.puzzle);
+    var won = !!live[key(state.puzzle.device[0], state.puzzle.device[1])];
+
+    for (var r = 0; r < state.puzzle.rows; r++) {
+      for (var c = 0; c < state.puzzle.cols; c++) {
+        var cellData = state.puzzle.board[r][c];
+        var cellEl = document.createElement('div');
+        cellEl.className = 'cell';
+        var isLive = !!live[key(r, c)];
+        if (isLive) cellEl.classList.add('live');
+
+        var tile = document.createElement('div');
+        tile.className = 'tile';
+
+        ORDER.forEach(function (d) {
+          if (cellData.conns[d]) {
+            var stub = document.createElement('div');
+            stub.className = 'stub ' + d.toLowerCase();
+            tile.appendChild(stub);
+          }
+        });
+        var hub = document.createElement('div');
+        hub.className = 'hub';
+        tile.appendChild(hub);
+
+        if (cellData.type === 'source') {
+          cellEl.classList.add('terminal');
+          var icon = document.createElement('div');
+          icon.className = 'terminal-icon';
+          icon.textContent = '🔌';
+          tile.appendChild(icon);
+        } else if (cellData.type === 'device') {
+          cellEl.classList.add('terminal', 'device-cell', cellData.device.key);
+          if (won) cellEl.classList.add('on');
+          var dicon = document.createElement('div');
+          dicon.className = 'terminal-icon';
+          dicon.textContent = won ? cellData.device.on : cellData.device.off;
+          if (!won) dicon.style.opacity = '0.45';
+          tile.appendChild(dicon);
+        } else if (cellData.rotatable) {
+          (function (rr, cc) {
+            tile.addEventListener('click', function () { onRotate(rr, cc); });
+          })(r, c);
+        }
+
+        cellEl.appendChild(tile);
+        boardEl.appendChild(cellEl);
+      }
+    }
+
+    if (won && !state.won) {
+      state.won = true;
+      onWin();
+    }
+  }
+
+  function onRotate(r, c) {
+    if (state.won) return;
+    var cell = state.puzzle.board[r][c];
+    if (!cell.rotatable) return;
+    cell.conns = rotateCW(cell.conns);
+    state.moves++;
+    document.getElementById('moveCount').textContent = state.moves;
+    if (!state.startedAt) startTimer();
+    render();
+  }
+
+  function startTimer() {
+    state.startedAt = Date.now();
+    timerHandle = setInterval(function () {
+      var secs = Math.floor((Date.now() - state.startedAt) / 1000);
+      var m = Math.floor(secs / 60), s = secs % 60;
+      document.getElementById('timeCount').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    }, 250);
+  }
+
+  function stopTimer() {
+    if (timerHandle) { clearInterval(timerHandle); timerHandle = null; }
+  }
+
+  function bestKey(diff) { return 'wireworks-best-' + diff; }
+
+  function onWin() {
+    stopTimer();
+    var secs = state.startedAt ? Math.floor((Date.now() - state.startedAt) / 1000) : 0;
+    var m = Math.floor(secs / 60), s = secs % 60;
+    var timeStr = m + ':' + (s < 10 ? '0' : '') + s;
+
+    var bKey = bestKey(state.difficulty);
+    var prevBest = null;
+    try { prevBest = JSON.parse(localStorage.getItem(bKey) || 'null'); } catch (e) { prevBest = null; }
+    var isNewBest = !prevBest || state.moves < prevBest.moves;
+    if (isNewBest) {
+      try { localStorage.setItem(bKey, JSON.stringify({ moves: state.moves, time: secs })); } catch (e) {}
+    }
+
+    document.getElementById('winEmoji').textContent = state.puzzle.deviceInfo.on;
+    document.getElementById('winTitle').textContent = 'You powered up ' + state.puzzle.deviceInfo.name + '!';
+    document.getElementById('winStats').textContent = state.moves + ' moves in ' + timeStr;
+    var best = prevBest && !isNewBest ? prevBest : { moves: state.moves, time: secs };
+    var bestM = Math.floor(best.time / 60), bestS = best.time % 60;
+    document.getElementById('winBest').textContent = (isNewBest ? 'New best: ' : 'Best: ') +
+      best.moves + ' moves, ' + bestM + ':' + (bestS < 10 ? '0' : '') + bestS;
+    document.getElementById('winOverlay').classList.add('show');
+  }
+
+  function newPuzzle() {
+    stopTimer();
+    document.getElementById('winOverlay').classList.remove('show');
+    var difficulty = document.getElementById('difficulty').value;
+    var puzzle = generatePuzzle(difficulty);
+    state = { puzzle: puzzle, difficulty: difficulty, moves: 0, startedAt: null, won: false };
+    document.getElementById('moveCount').textContent = '0';
+    document.getElementById('timeCount').textContent = '0:00';
+    render();
+  }
+
+  document.getElementById('newPuzzleBtn').addEventListener('click', newPuzzle);
+  document.getElementById('playAgainBtn').addEventListener('click', newPuzzle);
+  document.getElementById('difficulty').addEventListener('change', newPuzzle);
+
+  newPuzzle();
+})();
+</script>
+</body>
+</html>
