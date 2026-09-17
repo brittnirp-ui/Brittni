@@ -296,7 +296,7 @@
     for (var r = 0; r < rows; r++) {
       var rowArr = [];
       for (var c = 0; c < cols; c++) {
-        rowArr.push({ type: 'decoy', conns: randomShapeConns(shapes), solved: null });
+        rowArr.push({ type: 'decoy', conns: randomShapeConns(shapes), solved: null, rotatable: true });
       }
       board.push(rowArr);
     }
