@@ -253,6 +253,44 @@
   }
   .intro p{ color: var(--muted); font-size: 14.5px; line-height:1.6; margin: 0 0 26px; }
 
+  .level-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .pips{ display:flex; gap:5px; }
+  .pips i{
+    width: 8px; height: 8px;
+    border: 1px solid var(--gold);
+    transform: rotate(45deg);
+    display:inline-block;
+  }
+  .pips i.on{ background: var(--gold); }
+  .level-kicker{
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .level-list{
+    list-style:none;
+    padding:0;
+    margin: -8px 0 24px;
+    text-align:left;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    padding: 10px 4px;
+  }
+  .level-list b{ color: var(--gold-bright); font-weight: 500; }
+
   footer{
     text-align:center;
     font-size: 11px;
@@ -277,29 +315,23 @@
   <footer>real auction &amp; sale records &middot; play again anytime</footer>
 </div>
 
+<script src="items.js"></script>
 <script>
-const ITEMS = [
-  { name: "Slash's Guns N' Roses Tour Gibson", detail: "Photo-matched, tour-used Les Paul '59 Custom Shop guitar, autographed", price: 307692, year: 2026, cat: "Music" },
-  { name: "Freddie Mercury's Gold Microphone", detail: "Shure 565SD, with direct performance provenance", price: 199584, year: 2026, cat: "Music" },
-  { name: "Prince's “Blue Angel” Guitar", detail: "Custom-built Cloud guitar, long thought lost before resurfacing at auction", price: 563000, year: 2020, cat: "Music" },
-  { name: "Eric Clapton's “Blackie” Stratocaster", detail: "Clapton's main stage guitar for over a decade, sold for charity", price: 959500, year: 2000, cat: "Music" },
-  { name: "Legend of Zelda, Sealed Copy", detail: "Early-production NES cartridge, factory sealed", price: 870000, year: 2021, cat: "Gaming" },
-  { name: "“Once Upon a Time in Shaolin”", detail: "The only copy ever pressed of the Wu-Tang Clan's secret album", price: 4000000, year: 2021, cat: "Music" },
-  { name: "John Lennon's Songwriting Piano", detail: "The Broadwood upright he used to compose much of Sgt. Pepper's", price: 3247000, year: 2026, cat: "Music" },
-  { name: "Super Mario 64, Sealed Copy", detail: "A++ graded 1996 N64 cartridge, still in shrink wrap", price: 1560000, year: 2021, cat: "Gaming" },
-  { name: "R2-D2 Droid", detail: "Screen-used across the original Star Wars trilogy and prequels", price: 2750000, year: 2017, cat: "Film" },
-  { name: "Kurt Cobain's “Unplugged” Guitar", detail: "The Martin D-18E played at Nirvana's MTV Unplugged in New York", price: 6010000, year: 2020, cat: "Music" },
-  { name: "Darth Vader's Lightsaber", detail: "Hero prop from The Empire Strikes Back and Return of the Jedi", price: 3600000, year: 2025, cat: "Film" },
-  { name: "Marilyn Monroe's White Dress", detail: "The subway-grate dress from The Seven Year Itch", price: 4600000, year: 2011, cat: "Film" },
-  { name: "1952 Topps Mickey Mantle Card", detail: "Mint-condition rookie-era card, found decades ago in a basement box", price: 12600000, year: 2022, cat: "Sports" },
-  { name: "T206 Honus Wagner Card", detail: "The “Mona Lisa” of baseball cards, one of the rarest ever printed", price: 7250000, year: 2022, cat: "Sports" },
-  { name: "Michael Jordan's 1998 Finals Jersey", detail: "Game-worn in Game 1 of the Bulls' final “Last Dance” title run", price: 10091000, year: 2022, cat: "Sports" },
-  { name: "Action Comics #1", detail: "Superman's first-ever appearance, in the highest known grade", price: 15000000, year: 2026, cat: "Comics" },
-  { name: "Jordan / Kobe Bryant Dual Logoman", detail: "One-of-one card with both stars' jersey patches and autographs", price: 12932000, year: 2025, cat: "Sports" },
-  { name: "Pikachu Illustrator, PSA 10", detail: "The only perfect-grade copy of the rarest Pokémon card in existence", price: 16492000, year: 2026, cat: "Trading Cards" },
-  { name: "Babe Ruth's “Called Shot” Jersey", detail: "Worn for his legendary called-shot home run in the 1932 World Series", price: 24120000, year: 2024, cat: "Sports" },
-  { name: "Dorothy's Ruby Slippers", detail: "Screen-worn in The Wizard of Oz — stolen from a museum in 2005, later recovered", price: 32500000, year: 2024, cat: "Film" },
+// Levels are built from how far apart the two prices are (bigger ÷ smaller).
+// Adding items to items.js automatically feeds every level.
+const LEVELS = [
+  { name: "Opening Bids",     blurb: "Big gaps. Trust your gut.",                         minRatio: 3,   maxRatio: Infinity, rounds: 6 },
+  { name: "Serious Money",    blurb: "Prices are closer now — within 1.5x to 3x.",   minRatio: 1.5, maxRatio: 3,        rounds: 6 },
+  { name: "The Private Room", blurb: "Near-identical price tags. Collectors only.",       minRatio: 1,   maxRatio: 1.5,      rounds: 6 },
 ];
+
+const ITEMS = (window.HB_ITEMS || []).filter(it =>
+  it && typeof it.name === "string" && it.name.trim() &&
+  typeof it.price === "number" && isFinite(it.price) && it.price > 0
+).map(it => ({
+  name: it.name, detail: it.detail || "", price: it.price,
+  year: it.year || "", cat: it.cat || "Memorabilia",
+}));
 
 function fmt(n){
   return "$" + n.toLocaleString("en-US");
@@ -309,8 +341,14 @@ let deck = [];
 let current = null;
 let next = null;
 let streak = 0;
+let levelIdx = 0;
+let levelCorrect = 0;
 let best = 0;
-try{ best = parseInt(localStorage.getItem("hb_best") || "0", 10) || 0; }catch(e){}
+let bestLevel = 0;
+try{
+  best = parseInt(localStorage.getItem("hb_best") || "0", 10) || 0;
+  bestLevel = parseInt(localStorage.getItem("hb_best_level") || "0", 10) || 0;
+}catch(e){}
 
 function shuffle(arr){
   const a = arr.slice();
@@ -321,25 +359,65 @@ function shuffle(arr){
   return a;
 }
 
+function ratio(a, b){
+  return Math.max(a.price, b.price) / Math.min(a.price, b.price);
+}
+
+// Pull the next lot from the deck whose price gap fits the current level.
+// If nothing fits, take the one whose gap is closest to the level's range.
+function drawNext(){
+  if(!deck.length) return null;
+  const lvl = LEVELS[levelIdx];
+  const fits = deck.filter(it => it.price !== current.price && (r => r >= lvl.minRatio && r < lvl.maxRatio)(ratio(current, it)));
+  let pick;
+  if(fits.length){
+    pick = fits[Math.floor(Math.random() * fits.length)];
+  } else {
+    const miss = it => {
+      const r = ratio(current, it);
+      return r < lvl.minRatio ? lvl.minRatio / r : r >= lvl.maxRatio ? r / lvl.maxRatio : 1;
+    };
+    pick = deck.reduce((a, b) => miss(b) < miss(a) ? b : a);
+  }
+  deck.splice(deck.indexOf(pick), 1);
+  return pick;
+}
+
 function updateStreakDisplay(){
   document.getElementById("streakNum").textContent = streak;
 }
 
 function saveBest(){
-  if(streak > best){
-    best = streak;
-    try{ localStorage.setItem("hb_best", String(best)); }catch(e){}
-  }
+  if(streak > best) best = streak;
+  const reached = levelIdx + 1;
+  if(reached > bestLevel) bestLevel = reached;
+  try{
+    localStorage.setItem("hb_best", String(best));
+    localStorage.setItem("hb_best_level", String(bestLevel));
+  }catch(e){}
+}
+
+function levelBar(){
+  const lvl = LEVELS[levelIdx];
+  let pips = "";
+  for(let i = 0; i < lvl.rounds; i++) pips += `<i class="${i < levelCorrect ? "on" : ""}"></i>`;
+  return `<div class="level-bar"><span>Level ${levelIdx + 1} &middot; ${lvl.name}</span><span class="pips">${pips}</span></div>`;
 }
 
 function renderIntro(){
   const app = document.getElementById("app");
+  if(ITEMS.length < 2){
+    app.innerHTML = `<div class="intro"><h1>The auction house is empty.</h1><p>No lots loaded &mdash; check items.js.</p></div>`;
+    return;
+  }
+  const levelList = LEVELS.map((l, i) => `<li><b>${i + 1}. ${l.name}</b> &mdash; ${l.blurb}</li>`).join("");
   app.innerHTML = `
     <div class="intro">
       <h1>What's the record<br>sale price?</h1>
       <p>Real auction and private-sale records for music, sports, film, and gaming memorabilia. One item shown, one hidden &mdash; guess whether the hidden lot sold for more or less. One wrong guess ends the run.</p>
+      <ul class="level-list">${levelList}</ul>
       <button class="btn-primary" id="startBtn">Start the Auction</button>
-      ${best > 0 ? `<div class="end-stats" style="margin-top:22px;"><div><b>${best}</b><span>best streak</span></div></div>` : ""}
+      ${best > 0 ? `<div class="end-stats" style="margin-top:22px;"><div><b>${best}</b><span>best streak</span></div><div><b>${bestLevel}</b><span>best level</span></div></div>` : ""}
     </div>
   `;
   document.getElementById("startBtn").onclick = startGame;
@@ -348,15 +426,18 @@ function renderIntro(){
 function startGame(){
   deck = shuffle(ITEMS);
   streak = 0;
+  levelIdx = 0;
+  levelCorrect = 0;
   updateStreakDisplay();
   current = deck.pop();
-  next = deck.pop();
+  next = drawNext();
   renderRound();
 }
 
 function renderRound(){
   const app = document.getElementById("app");
   app.innerHTML = `
+    ${levelBar()}
     <div class="lot" data-tag="Lot &mdash; Sold">
       <div class="lot-name">${current.name}</div>
       <div class="lot-detail">${current.detail}</div>
@@ -398,17 +479,21 @@ function guess(direction){
 
   if(correct){
     streak++;
+    levelCorrect++;
     updateStreakDisplay();
     banner.textContent = "Sold. The gavel falls in your favor.";
     banner.classList.remove("wrong");
     setTimeout(() => {
       current = next;
-      next = deck.pop();
-      if(!next){
-        endGame(true);
-      } else {
-        renderRound();
+      if(levelCorrect >= LEVELS[levelIdx].rounds){
+        if(levelIdx + 1 >= LEVELS.length) return endGame(true);
+        levelIdx++;
+        levelCorrect = 0;
+        return renderLevelUp();
       }
+      next = drawNext();
+      if(!next) endGame(true);
+      else renderRound();
     }, 1400);
   } else {
     banner.textContent = "No sale — you read that one wrong.";
@@ -417,17 +502,37 @@ function guess(direction){
   }
 }
 
-function endGame(clearedDeck){
+function renderLevelUp(){
+  const lvl = LEVELS[levelIdx];
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    <div class="end-screen">
+      <div class="level-kicker">Level ${levelIdx + 1}</div>
+      <h2>${lvl.name}</h2>
+      <p>${lvl.blurb}</p>
+      <div class="end-stats"><div><b>${streak}</b><span>streak so far</span></div></div>
+      <button class="btn-primary" id="goBtn">Next Lot</button>
+    </div>
+  `;
+  document.getElementById("goBtn").onclick = () => {
+    next = drawNext();
+    if(!next) endGame(true);
+    else renderRound();
+  };
+}
+
+function endGame(clearedAll){
   saveBest();
   const app = document.getElementById("app");
   app.innerHTML = `
     <div class="end-screen">
       <div class="hammer">&#128296;</div>
-      <h2>${clearedDeck ? "You cleared the room." : "Gavel down."}</h2>
-      <p>${clearedDeck ? "Every lot in the house, called correctly." : "Even seasoned collectors miss one now and then."}</p>
+      <h2>${clearedAll ? "You cleared the room." : "Gavel down."}</h2>
+      <p>${clearedAll ? "Every level, called correctly. The house bows." : `Out in Level ${levelIdx + 1} &middot; ${LEVELS[levelIdx].name}. Even seasoned collectors miss one now and then.`}</p>
       <div class="end-stats">
         <div><b>${streak}</b><span>this run</span></div>
         <div><b>${best}</b><span>best ever</span></div>
+        <div><b>${bestLevel}</b><span>best level</span></div>
       </div>
       <button class="btn-primary" id="againBtn">Run It Again</button>
     </div>
