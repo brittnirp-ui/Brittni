@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Highest Bidder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0b0a08;
+    --panel: #17140f;
+    --panel-2: #1e1a13;
+    --hairline: #35301f;
+    --gold: #c8a15c;
+    --gold-bright: #e6c688;
+    --ink: #ece5d6;
+    --muted: #8f8875;
+    --oxblood: #6e2a2a;
+    --oxblood-bright: #a84545;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:inherit;}
+  html{scroll-padding-top: env(safe-area-inset-top, 0px);}
+  html,body{
+    height:100%;
+    margin:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Jost', sans-serif;
+  }
+  body{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-height:100%;
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(200,161,92,0.06), transparent 45%),
+      radial-gradient(circle at 85% 92%, rgba(200,161,92,0.05), transparent 40%);
+  }
+
+  .wrap{
+    width:100%;
+    max-width:460px;
+    padding: 28px 20px 40px;
+    display:flex;
+    flex-direction:column;
+    min-height:100%;
+  }
+
+  .back-link{
+    display:inline-block;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    margin-bottom: 14px;
+    transition: color 0.2s;
+  }
+  .back-link:hover{ color: var(--gold); }
+
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    border-bottom: 1px solid var(--hairline);
+    padding-bottom: 14px;
+    margin-bottom: 22px;
+  }
+  .brand{
+    font-family:'Cormorant Garamond', serif;
+    font-weight:600;
+    font-size: 26px;
+    letter-spacing: 0.5px;
+    color: var(--gold-bright);
+  }
+  .brand span{ color: var(--ink); font-style: italic; font-weight: 500; }
+  .streak{
+    text-align:right;
+    font-size: 12px;
+    color: var(--muted);
+    line-height:1.4;
+  }
+  .streak b{
+    display:block;
+    font-family:'Cormorant Garamond', serif;
+    font-size: 22px;
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  main{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:16px; }
+
+  .lot{
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--hairline);
+    border-radius: 2px;
+    padding: 22px 20px;
+    position: relative;
+  }
+  .lot::before{
+    content: attr(data-tag);
+    position:absolute;
+    top:-11px;
+    left: 18px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+  }
+  .lot-name{
+    font-family:'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 25px;
+    line-height:1.25;
+    color: var(--ink);
+    margin: 4px 0 6px;
+  }
+  .lot-detail{
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height:1.5;
+    margin: 0 0 14px;
+  }
+  .lot-price{
+    font-family:'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 34px;
+    color: var(--gold-bright);
+    letter-spacing: 0.3px;
+  }
+  .lot-price .cents{ font-size: 18px; color: var(--muted); }
+  .lot-year{ font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .versus{
+    text-align:center;
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--muted);
+    margin: -4px 0;
+  }
+
+  .guess-price{
+    font-family:'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 34px;
+    color: var(--muted);
+    letter-spacing: 4px;
+  }
+
+  .choices{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .choice-btn{
+    font-family:'Jost', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    padding: 15px 8px;
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold-bright);
+    border-radius: 2px;
+    cursor:pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .choice-btn:active{ transform: scale(0.98); }
+  .choice-btn:hover{ background: rgba(200,161,92,0.1); }
+  .choice-btn small{ display:block; font-size: 10.5px; color: var(--muted); margin-top: 3px; letter-spacing: 0.5px;}
+
+  .result-banner{
+    text-align:center;
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 18px;
+    min-height: 26px;
+    color: var(--gold-bright);
+  }
+  .result-banner.wrong{ color: var(--oxblood-bright); }
+
+  .btn-primary{
+    font-family:'Jost', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    padding: 14px;
+    background: var(--gold);
+    color: #17140f;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .btn-primary:active{ transform: scale(0.99); }
+
+  .btn-ghost{
+    font-family:'Jost', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--hairline);
+    padding: 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .end-screen{
+    text-align:center;
+    padding: 10px 4px 4px;
+  }
+  .end-screen .hammer{ font-size: 34px; margin-bottom: 6px; }
+  .end-screen h2{
+    font-family:'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 26px;
+    margin: 0 0 4px;
+    color: var(--gold-bright);
+  }
+  .end-screen p{ color: var(--muted); font-size: 14px; margin: 0 0 22px; }
+  .end-stats{
+    display:flex;
+    justify-content:center;
+    gap: 30px;
+    margin-bottom: 24px;
+  }
+  .end-stats div{ text-align:center; }
+  .end-stats b{
+    display:block;
+    font-family:'Cormorant Garamond', serif;
+    font-size: 30px;
+    color: var(--gold);
+  }
+  .end-stats span{ font-size: 11px; letter-spacing: 0.5px; color: var(--muted); }
+
+  .intro{ text-align:center; padding: 10px 4px 4px; }
+  .intro h1{
+    font-family:'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 30px;
+    line-height:1.2;
+    margin: 0 0 12px;
+    color: var(--gold-bright);
+  }
+  .intro p{ color: var(--muted); font-size: 14.5px; line-height:1.6; margin: 0 0 26px; }
+
+  footer{
+    text-align:center;
+    font-size: 11px;
+    color: var(--hairline);
+    margin-top: 24px;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a href="../" class="back-link">&larr; Back to Games</a>
+
+  <header>
+    <div class="brand">HIGHEST <span>Bidder</span></div>
+    <div class="streak">current streak<b id="streakNum">0</b></div>
+  </header>
+
+  <main id="app"></main>
+
+  <footer>real auction &amp; sale records &middot; play again anytime</footer>
+</div>
+
+<script>
+const ITEMS = [
+  { name: "Slash's Guns N' Roses Tour Gibson", detail: "Photo-matched, tour-used Les Paul '59 Custom Shop guitar, autographed", price: 307692, year: 2026, cat: "Music" },
+  { name: "Freddie Mercury's Gold Microphone", detail: "Shure 565SD, with direct performance provenance", price: 199584, year: 2026, cat: "Music" },
+  { name: "Prince's “Blue Angel” Guitar", detail: "Custom-built Cloud guitar, long thought lost before resurfacing at auction", price: 563000, year: 2020, cat: "Music" },
+  { name: "Eric Clapton's “Blackie” Stratocaster", detail: "Clapton's main stage guitar for over a decade, sold for charity", price: 959500, year: 2000, cat: "Music" },
+  { name: "Legend of Zelda, Sealed Copy", detail: "Early-production NES cartridge, factory sealed", price: 870000, year: 2021, cat: "Gaming" },
+  { name: "“Once Upon a Time in Shaolin”", detail: "The only copy ever pressed of the Wu-Tang Clan's secret album", price: 4000000, year: 2021, cat: "Music" },
+  { name: "John Lennon's Songwriting Piano", detail: "The Broadwood upright he used to compose much of Sgt. Pepper's", price: 3247000, year: 2026, cat: "Music" },
+  { name: "Super Mario 64, Sealed Copy", detail: "A++ graded 1996 N64 cartridge, still in shrink wrap", price: 1560000, year: 2021, cat: "Gaming" },
+  { name: "R2-D2 Droid", detail: "Screen-used across the original Star Wars trilogy and prequels", price: 2750000, year: 2017, cat: "Film" },
+  { name: "Kurt Cobain's “Unplugged” Guitar", detail: "The Martin D-18E played at Nirvana's MTV Unplugged in New York", price: 6010000, year: 2020, cat: "Music" },
+  { name: "Darth Vader's Lightsaber", detail: "Hero prop from The Empire Strikes Back and Return of the Jedi", price: 3600000, year: 2025, cat: "Film" },
+  { name: "Marilyn Monroe's White Dress", detail: "The subway-grate dress from The Seven Year Itch", price: 4600000, year: 2011, cat: "Film" },
+  { name: "1952 Topps Mickey Mantle Card", detail: "Mint-condition rookie-era card, found decades ago in a basement box", price: 12600000, year: 2022, cat: "Sports" },
+  { name: "T206 Honus Wagner Card", detail: "The “Mona Lisa” of baseball cards, one of the rarest ever printed", price: 7250000, year: 2022, cat: "Sports" },
+  { name: "Michael Jordan's 1998 Finals Jersey", detail: "Game-worn in Game 1 of the Bulls' final “Last Dance” title run", price: 10091000, year: 2022, cat: "Sports" },
+  { name: "Action Comics #1", detail: "Superman's first-ever appearance, in the highest known grade", price: 15000000, year: 2026, cat: "Comics" },
+  { name: "Jordan / Kobe Bryant Dual Logoman", detail: "One-of-one card with both stars' jersey patches and autographs", price: 12932000, year: 2025, cat: "Sports" },
+  { name: "Pikachu Illustrator, PSA 10", detail: "The only perfect-grade copy of the rarest Pokémon card in existence", price: 16492000, year: 2026, cat: "Trading Cards" },
+  { name: "Babe Ruth's “Called Shot” Jersey", detail: "Worn for his legendary called-shot home run in the 1932 World Series", price: 24120000, year: 2024, cat: "Sports" },
+  { name: "Dorothy's Ruby Slippers", detail: "Screen-worn in The Wizard of Oz — stolen from a museum in 2005, later recovered", price: 32500000, year: 2024, cat: "Film" },
+];
+
+function fmt(n){
+  return "$" + n.toLocaleString("en-US");
+}
+
+let deck = [];
+let current = null;
+let next = null;
+let streak = 0;
+let best = 0;
+try{ best = parseInt(localStorage.getItem("hb_best") || "0", 10) || 0; }catch(e){}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function updateStreakDisplay(){
+  document.getElementById("streakNum").textContent = streak;
+}
+
+function saveBest(){
+  if(streak > best){
+    best = streak;
+    try{ localStorage.setItem("hb_best", String(best)); }catch(e){}
+  }
+}
+
+function renderIntro(){
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    <div class="intro">
+      <h1>What's the record<br>sale price?</h1>
+      <p>Real auction and private-sale records for music, sports, film, and gaming memorabilia. One item shown, one hidden &mdash; guess whether the hidden lot sold for more or less. One wrong guess ends the run.</p>
+      <button class="btn-primary" id="startBtn">Start the Auction</button>
+      ${best > 0 ? `<div class="end-stats" style="margin-top:22px;"><div><b>${best}</b><span>best streak</span></div></div>` : ""}
+    </div>
+  `;
+  document.getElementById("startBtn").onclick = startGame;
+}
+
+function startGame(){
+  deck = shuffle(ITEMS);
+  streak = 0;
+  updateStreakDisplay();
+  current = deck.pop();
+  next = deck.pop();
+  renderRound();
+}
+
+function renderRound(){
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    <div class="lot" data-tag="Lot &mdash; Sold">
+      <div class="lot-name">${current.name}</div>
+      <div class="lot-detail">${current.detail}</div>
+      <div class="lot-price">${fmt(current.price)}</div>
+      <div class="lot-year">${current.cat} &middot; ${current.year}</div>
+    </div>
+
+    <div class="versus">did the next lot sell for more, or less?</div>
+
+    <div class="lot" data-tag="Next Lot">
+      <div class="lot-name">${next.name}</div>
+      <div class="lot-detail">${next.detail}</div>
+      <div class="guess-price" id="nextPrice">? ? ?</div>
+      <div class="lot-year">${next.cat} &middot; ${next.year}</div>
+    </div>
+
+    <div class="choices">
+      <button class="choice-btn" id="higherBtn">HIGHER<small>sold for more</small></button>
+      <button class="choice-btn" id="lowerBtn">LOWER<small>sold for less</small></button>
+    </div>
+    <div class="result-banner" id="banner"></div>
+  `;
+  document.getElementById("higherBtn").onclick = () => guess("higher");
+  document.getElementById("lowerBtn").onclick = () => guess("lower");
+}
+
+function guess(direction){
+  document.getElementById("higherBtn").disabled = true;
+  document.getElementById("lowerBtn").disabled = true;
+
+  const actuallyHigher = next.price >= current.price;
+  const correct = (direction === "higher" && actuallyHigher) || (direction === "lower" && !actuallyHigher);
+
+  const banner = document.getElementById("banner");
+  const priceEl = document.getElementById("nextPrice");
+  priceEl.textContent = fmt(next.price);
+  priceEl.style.color = "var(--gold-bright)";
+  priceEl.style.letterSpacing = "0.3px";
+
+  if(correct){
+    streak++;
+    updateStreakDisplay();
+    banner.textContent = "Sold. The gavel falls in your favor.";
+    banner.classList.remove("wrong");
+    setTimeout(() => {
+      current = next;
+      next = deck.pop();
+      if(!next){
+        endGame(true);
+      } else {
+        renderRound();
+      }
+    }, 1400);
+  } else {
+    banner.textContent = "No sale — you read that one wrong.";
+    banner.classList.add("wrong");
+    setTimeout(() => endGame(false), 1400);
+  }
+}
+
+function endGame(clearedDeck){
+  saveBest();
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    <div class="end-screen">
+      <div class="hammer">&#128296;</div>
+      <h2>${clearedDeck ? "You cleared the room." : "Gavel down."}</h2>
+      <p>${clearedDeck ? "Every lot in the house, called correctly." : "Even seasoned collectors miss one now and then."}</p>
+      <div class="end-stats">
+        <div><b>${streak}</b><span>this run</span></div>
+        <div><b>${best}</b><span>best ever</span></div>
+      </div>
+      <button class="btn-primary" id="againBtn">Run It Again</button>
+    </div>
+  `;
+  document.getElementById("againBtn").onclick = startGame;
+}
+
+renderIntro();
+</script>
+</body>
+</html>
