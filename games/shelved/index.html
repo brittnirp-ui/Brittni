@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shelved</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Fraunces:opsz,wght@9..144,600..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wall:#FFD84D;
+  --panel:#BFE3F5;
+  --line:#1B1F3B;
+  --board:#1B1F3B;
+  --card:#FFFFFF;
+  --text:#1B1F3B;
+  --accent:#FF6B9A;
+  --focus:#2F4BFF;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --wall:#171A33;
+    --panel:#2A3563;
+    --line:#0A0C1A;
+    --board:#FFD84D;
+    --card:#232852;
+    --text:#FFF3C4;
+    --accent:#FF6B9A;
+    --focus:#9DB2FF;
+  }
+}
+:root[data-theme="dark"]{
+  --wall:#171A33;
+  --panel:#2A3563;
+  --line:#0A0C1A;
+  --board:#FFD84D;
+  --card:#232852;
+  --text:#FFF3C4;
+  --accent:#FF6B9A;
+  --focus:#9DB2FF;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none !important}
+html{height:100vh;height:100dvh;scroll-padding-top:env(safe-area-inset-top,0px);background:var(--wall);overscroll-behavior:none}
+body{
+  margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:var(--wall);color:var(--text);
+  font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-size:16px;line-height:1.35;-webkit-tap-highlight-color:transparent;
+}
+.wrap{max-width:760px;height:100%;margin:0 auto;padding:12px 14px 14px}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+
+/* buttons */
+.btn{
+  font-weight:700;background:var(--card);color:var(--text);
+  border:3px solid var(--line);border-radius:12px;padding:10px 16px;
+  box-shadow:0 4px 0 var(--line);cursor:pointer;
+  transition:transform .08s,box-shadow .08s;
+}
+.btn:active{transform:translateY(4px);box-shadow:0 0 0 var(--line)}
+.btn.primary{background:var(--accent);color:#1B1F3B}
+.btn.big{font-size:1.15rem;padding:14px 22px;width:100%}
+.card{background:var(--card);border:3px solid var(--line);border-radius:16px;box-shadow:6px 6px 0 var(--line)}
+
+/* setup */
+#setup{height:100%;display:flex;flex-direction:column;gap:12px;overflow-x:hidden;overflow-y:auto;padding:0 6px 6px 0}
+.hero{flex:1;min-height:0;display:flex;flex-direction:column}
+.hero h1{
+  flex:none;font-size:clamp(2.6rem,9vh,4.6rem);line-height:.95;margin:2px 0 6px;font-weight:800;
+  letter-spacing:-.04em;transform:rotate(-2deg);transform-origin:left bottom;
+  text-shadow:4px 4px 0 var(--accent);
+}
+.lede{flex:none;font-size:1rem;margin:0 0 12px;font-weight:500}
+.hero-unit{
+  flex:1;min-height:0;display:flex;flex-direction:column;
+  background:var(--panel);border:3px solid var(--line);border-radius:16px;box-shadow:6px 6px 0 var(--line);
+  padding:26px 10px 0;overflow:hidden;
+}
+.hero-row{flex:1;min-height:0;display:flex;align-items:flex-end;justify-content:center;gap:3px}
+.hero-board{flex:none;height:14px;background:var(--board);border-top:3px solid var(--line);margin:0 -10px}
+.hero .book{position:relative;flex:0 1 auto;min-width:0;cursor:default}
+.hero .book.lifted{transform:translateY(-16px) rotate(7deg);box-shadow:5px 7px 0 var(--line);z-index:3}
+#form{flex:none;padding:14px 14px 16px;display:grid;gap:12px}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+legend{font-weight:800;font-size:1.05rem;padding:0;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.chip span{
+  display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:42px;
+  padding:6px 14px;background:var(--card);border:3px solid var(--line);border-radius:12px;
+  box-shadow:0 3px 0 var(--line);font-weight:700;font-size:.95rem;line-height:1.15;transition:transform .08s,box-shadow .08s;
+}
+#sizeChips .chip{flex:1 1 0}
+#sizeChips .chip span{padding:6px 4px}
+.chip small{font-weight:500;font-size:.75rem;opacity:.8}
+.chip input:checked + span{background:var(--accent);color:#1B1F3B;transform:translateY(3px);box-shadow:0 0 0 var(--line)}
+.chip input:checked + span small{opacity:1}
+.chip input:focus-visible + span{outline:3px solid var(--focus);outline-offset:3px}
+#customRow{margin-top:10px;display:grid;gap:2px}
+#customRow label{font-weight:700}
+input[type=range]{width:100%;accent-color:var(--accent);height:28px;margin:0}
+.check{display:flex;gap:12px;align-items:center;font-weight:600;cursor:pointer}
+.check input{width:24px;height:24px;accent-color:var(--accent);margin:0}
+@media (max-height:640px){ .hero-unit{display:none} }
+@media (max-height:780px){ .hero .t{display:none} }
+
+/* game */
+#game{height:100%;display:flex;flex-direction:column;min-height:0}
+.bar{flex:none;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.wordmark{
+  margin:0;font-size:1.7rem;font-weight:800;letter-spacing:-.04em;line-height:1;
+  transform:rotate(-2deg);text-shadow:3px 3px 0 var(--accent);
+}
+.stats{display:flex;gap:8px}
+.pill{
+  display:inline-flex;gap:6px;background:var(--card);
+  border:3px solid var(--line);border-radius:12px;padding:4px 12px;font-weight:600;min-height:40px;align-items:center;
+}
+.pill b{font-variant-numeric:tabular-nums;font-weight:800;min-width:2ch;text-align:right}
+button.pill{cursor:pointer;box-shadow:0 3px 0 var(--line)}
+button.pill[aria-pressed="true"]{background:var(--accent);color:#1B1F3B}
+.goal{flex:none;margin:0 6px 10px 0;padding:8px 12px;font-weight:500;font-size:.95rem;line-height:1.3}
+.goal b{font-size:1rem;font-weight:800;margin-right:6px}
+.unitwrap{flex:1;min-height:0;display:flex;align-items:center;padding:0 6px 6px 0}
+.unit{width:100%;background:var(--panel);border:3px solid var(--line);border-radius:16px;box-shadow:6px 6px 0 var(--line);padding:0 10px;overflow:hidden}
+#shelf{position:relative;width:100%}
+.board{position:absolute;left:-10px;right:-10px;height:14px;background:var(--board);border:3px solid var(--line);border-left:0;border-right:0;z-index:0}
+.book{
+  position:absolute;left:0;top:0;z-index:1;
+  background-color:var(--c);
+  border:2.5px solid var(--line);border-radius:4px 4px 1px 1px;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  transition:transform .22s cubic-bezier(.3,.9,.4,1);will-change:transform;
+}
+.v0{background-image:linear-gradient(to bottom,transparent 0 6px,rgba(27,31,59,.3) 6px 9px,transparent 9px calc(100% - 12px),rgba(27,31,59,.3) calc(100% - 12px) calc(100% - 9px),transparent calc(100% - 9px))}
+.v1{background-image:linear-gradient(to bottom,rgba(27,31,59,.3) 0 12px,transparent 12px calc(100% - 7px),rgba(27,31,59,.3) calc(100% - 7px) calc(100% - 4px),transparent calc(100% - 4px))}
+.v2{background-image:linear-gradient(to right,transparent 0 18%,rgba(255,255,255,.22) 18% 82%,transparent 82%),linear-gradient(to bottom,transparent 0 6px,rgba(27,31,59,.3) 6px 9px,transparent 9px)}
+.book .t{writing-mode:vertical-rl;white-space:nowrap;font-weight:700;letter-spacing:.02em;pointer-events:none;line-height:1}
+.book.dragging{transition:none;z-index:30;cursor:grabbing;box-shadow:6px 9px 0 var(--line)}
+.book.hinting{animation:flash .5s ease-in-out 4}
+.noanim .book,.noanim .slot{transition:none}
+.slot{
+  position:absolute;left:0;top:0;z-index:0;display:none;
+  border:3px dashed var(--line);border-radius:4px;background:rgba(255,255,255,.35);
+  transition:transform .22s cubic-bezier(.3,.9,.4,1);
+}
+.marker{
+  position:absolute;left:0;top:0;z-index:2;display:none;pointer-events:none;
+  border:3px dashed var(--accent);border-radius:4px;background:rgba(255,107,154,.28);
+}
+.marker.on{display:block;animation:flash .5s ease-in-out 4}
+.intro .book{animation:drop .55s cubic-bezier(.2,.9,.3,1.15) both;animation-delay:calc(var(--i) * 35ms)}
+.won .book{animation:hop .6s ease both;animation-delay:calc(var(--i) * 45ms)}
+@keyframes drop{from{translate:0 -260px;opacity:0}to{translate:0 0;opacity:1}}
+@keyframes hop{0%,100%{translate:0 0}40%{translate:0 -20px}}
+@keyframes flash{0%,100%{opacity:1}50%{opacity:.35}}
+.status{flex:none;min-height:1.3em;margin:6px 2px 8px;font-size:.95rem;font-weight:500}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+#game .actions{flex:none;flex-wrap:nowrap;padding-right:6px}
+#game .actions .btn{flex:1;padding:10px 8px}
+
+/* win */
+.overlay{
+  position:fixed;inset:0;z-index:100;background:rgba(27,31,59,.6);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.winCard{max-width:420px;width:100%;padding:24px 20px 22px;text-align:left}
+.winCard h2{font-size:2.4rem;font-weight:800;letter-spacing:-.03em;line-height:1;margin:0 0 8px;text-shadow:3px 3px 0 var(--accent)}
+.winCard p{margin:0 0 14px}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 14px}
+.stats3 div{border:3px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--panel);color:#1B1F3B}
+.stats3 dt{font-size:.85rem;font-weight:600}
+.stats3 dd{margin:0;font-size:1.6rem;font-weight:800;font-variant-numeric:tabular-nums}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .stats3 div{color:var(--text)}
+}
+:root[data-theme="dark"] .stats3 div{color:var(--text)}
+
+@media (prefers-reduced-motion:reduce){
+  .book,.slot{transition-duration:.01s}
+  .intro .book,.won .book,.book.hinting,.marker.on{animation:none}
+  .hero h1,.wordmark{transform:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section id="setup">
+    <div class="hero">
+      <h1>Shelved</h1>
+      <p class="lede">Sort a crowded shelf by color, title, thickness, or height.</p>
+      <div class="hero-unit"><div class="hero-row" id="heroRow"></div><div class="hero-board"></div></div>
+    </div>
+
+    <form id="form" class="card" autocomplete="off">
+      <fieldset>
+        <legend>Sort by</legend>
+        <div class="chips" id="modeChips">
+          <label class="chip"><input type="radio" name="mode" value="color" checked><span>Color</span></label>
+          <label class="chip"><input type="radio" name="mode" value="title"><span>Title, A to Z</span></label>
+          <label class="chip"><input type="radio" name="mode" value="width"><span>Thickness</span></label>
+          <label class="chip"><input type="radio" name="mode" value="height"><span>Height</span></label>
+          <label class="chip"><input type="radio" name="mode" value="surprise"><span>Surprise me</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Shelf size</legend>
+        <div class="chips" id="sizeChips">
+          <label class="chip"><input type="radio" name="size" value="easy"><span>Easy<small>7 books</small></span></label>
+          <label class="chip"><input type="radio" name="size" value="medium" checked><span>Medium<small>12 books</small></span></label>
+          <label class="chip"><input type="radio" name="size" value="hard"><span>Hard<small>18 books</small></span></label>
+          <label class="chip"><input type="radio" name="size" value="custom"><span>Custom<small>your pick</small></span></label>
+        </div>
+        <div id="customRow" hidden>
+          <label for="count">Number of books: <output id="countOut">10</output></label>
+          <input type="range" id="count" min="4" max="24" value="10">
+        </div>
+      </fieldset>
+
+      <label class="check"><input type="checkbox" id="reverse"> Flip the order, last to first</label>
+
+      <button class="btn primary big" type="submit">Start sorting</button>
+    </form>
+  </section>
+
+  <section id="game" hidden>
+    <header class="bar">
+      <h1 class="wordmark">Shelved</h1>
+      <div class="stats">
+        <div class="pill">Moves <b id="moves">0</b></div>
+        <button class="pill" id="timerBtn" type="button" aria-pressed="false">Timer <b id="timerVal">off</b></button>
+      </div>
+    </header>
+
+    <p class="goal card" id="goal"></p>
+
+    <div class="unitwrap" id="unitwrap"><div class="unit"><div id="shelf"></div></div></div>
+
+    <p class="status" id="status" aria-live="polite"></p>
+
+    <div class="actions">
+      <button class="btn" id="hintBtn" type="button">Hint</button>
+      <button class="btn" id="againBtn" type="button">New books</button>
+      <button class="btn" id="setupBtn" type="button">Setup</button>
+    </div>
+  </section>
+
+</div>
+
+<div id="win" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="winTitle">
+  <div class="card winCard">
+    <h2 id="winTitle">All in order</h2>
+    <p id="winSub"></p>
+    <dl class="stats3">
+      <div><dt>Moves</dt><dd id="wMoves">0</dd></div>
+      <div><dt>Time</dt><dd id="wTime">0:00</dd></div>
+      <div><dt>Hints</dt><dd id="wHints">0</dd></div>
+    </dl>
+    <p id="winBest"></p>
+    <div class="actions">
+      <button class="btn primary" id="playAgain" type="button">Play again</button>
+      <button class="btn" id="lookBtn" type="button">Look at the shelf</button>
+      <button class="btn" id="changeSetup" type="button">Change setup</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+var $ = function(s){ return document.querySelector(s); };
+var clamp = function(v,a,b){ return Math.max(a,Math.min(b,v)); };
+var rnd = function(a,b){ return a + Math.floor(Math.random()*(b-a+1)); };
+var pick = function(arr){ return arr[Math.floor(Math.random()*arr.length)]; };
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+var store = {
+  get:function(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set:function(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+};
+
+/* ---------- content ---------- */
+var FIRSTS = {
+  A:['Amber','Atlas','Ash'], B:['Bramble','Brass','Barley'], C:['Cinder','Copper','Cedar'],
+  D:['Dovetail','Dusk','Drift'], E:['Ember','Elm','Echo'], F:['Fable','Fern','Flint'],
+  G:['Gilded','Garnet','Gale'], H:['Harbor','Hollow','Hazel'], I:['Ivory','Indigo','Inkwell'],
+  J:['Juniper','Jasper','Jade'], K:['Kestrel','Kindle','Kelp'], L:['Lantern','Larch','Lull'],
+  M:['Marrow','Moss','Mirth'], N:['Nettle','Nocturne','Nimbus'], O:['Orchard','Onyx','Otter'],
+  P:['Paper','Pebble','Plum'], Q:['Quiet','Quill','Quartz'], R:['Rook','Russet','Ripple'],
+  S:['Saffron','Salt','Sable'], T:['Thistle','Tallow','Tide'], U:['Umber','Upland','Undertow'],
+  V:['Velvet','Vesper','Vale'], W:['Willow','Wren','Whisper'], Y:['Yarrow','Yonder','Yew'],
+  Z:['Zephyr','Zinnia','Zenith']
+};
+var SECONDS = ['Almanac','Atlas','Ballad','Bestiary','Cipher','Codex','Chronicle','Diary','Elegy','Fables','Folio','Gazette','Grimoire','Herbal','Hymns','Journal','Ledger','Legends','Letters','Manual','Memoir','Notes','Odes','Omens','Primer','Psalms','Recipes','Sagas','Sonnets','Stories','Treatise','Tales','Verses','Voyages'];
+var FONTS = [
+  {n:'Fraunces', fb:'Georgia, serif', k:0.56},
+  {n:'Archivo Narrow', fb:'"Arial Narrow", sans-serif', k:0.47},
+  {n:'Bricolage Grotesque', fb:'system-ui, sans-serif', k:0.55}
+];
+var PALETTE = [4,18,32,48,75,150,175,200,220,255,280,315,340];
+var GOALS = {
+  color:['Sort by color, red to violet','Sort by color, violet to red'],
+  title:['Sort by title, A to Z','Sort by title, Z to A'],
+  width:['Sort by thickness, thinnest to thickest','Sort by thickness, thickest to thinnest'],
+  height:['Sort by height, shortest to tallest','Sort by height, tallest to shortest']
+};
+var SIZES = {easy:7, medium:12, hard:18};
+var DEFAULT_STATUS = 'Drag a book to move it. Arrow keys work too.';
+
+/* ---------- color helpers ---------- */
+function hslToRgb(h,s,l){
+  h/=360; s/=100; l/=100;
+  var q = l<.5 ? l*(1+s) : l+s-l*s, p = 2*l-q;
+  function f(t){ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<1/2)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p; }
+  return [f(h+1/3),f(h),f(h-1/3)];
+}
+function lum(rgb){
+  var c = rgb.map(function(v){ return v<=.03928 ? v/12.92 : Math.pow((v+.055)/1.055,2.4); });
+  return .2126*c[0]+.7152*c[1]+.0722*c[2];
+}
+function textFor(h,s,l){ return lum(hslToRgb(h,s,l)) > .3 ? '#1B1F3B' : '#FFFFFF'; }
+
+/* ---------- state ---------- */
+var shelf = $('#shelf');
+var cfg = {mode:'color', size:'medium', count:10, reverse:false};
+var mode = 'color';
+var books = [], byId = {}, order = [];
+var L = null;               // layout
+var curPos = {};
+var drag = null, rafId = 0;
+var moves = 0, hints = 0, solved = false;
+var startT = 0, timerOn = false, timerInt = 0;
+var ghostEl = null, markerEl = null;
+var syncTimer = 0, introTimer = 0, lastW = 0, lastH = 0;
+
+/* ---------- book generation ---------- */
+function makeBooks(m,n){
+  var letters = Object.keys(FIRSTS), firsts;
+  if(n<=13){
+    firsts = shuffle(letters.slice()).slice(0,n).map(function(k){ return pick(FIRSTS[k]); });
+  }else{
+    var all=[]; letters.forEach(function(k){ all = all.concat(FIRSTS[k]); });
+    firsts = shuffle(all).slice(0,n);
+  }
+  var widths=[], heights=[], i;
+  if(m==='width'){
+    for(i=0;i<n;i++) widths.push(Math.round(14 + i*(46/(n-1))));
+    shuffle(widths);
+  }else{
+    for(i=0;i<n;i++) widths.push(m==='title' ? rnd(32,46) : rnd(26,44));
+  }
+  if(m==='height'){
+    for(i=0;i<n;i++) heights.push(Math.round(84 + i*(72/(n-1))));
+    shuffle(heights);
+  }else{
+    for(i=0;i<n;i++) heights.push(rnd(112,150));
+  }
+  var list=[];
+  for(i=0;i<n;i++){
+    var hue, sat, lig;
+    if(m==='color'){
+      var step = 285/(n-1);
+      hue = clamp(i*step + (Math.random()-.5)*step*.24, 0, 285);
+      sat = 82; lig = 54;
+    }else{
+      hue = pick(PALETTE) + rnd(-6,6); sat = 72; lig = 52 + rnd(-4,6);
+    }
+    list.push({
+      id:i, title:firsts[i]+' '+pick(SECONDS),
+      hue:hue, s:sat, l:lig, w:widths[i], h:heights[i],
+      font:pick(FONTS), variant:rnd(0,2), ink:textFor(hue,sat,lig)
+    });
+  }
+  return list;
+}
+
+function keyOf(b){
+  if(mode==='color') return b.hue;
+  if(mode==='title') return b.title.toLowerCase();
+  if(mode==='width') return b.w;
+  return b.h;
+}
+function solution(){
+  var arr = books.slice().sort(function(a,b){
+    var x=keyOf(a), y=keyOf(b);
+    if(typeof x==='string') return x.localeCompare(y);
+    return x-y;
+  });
+  if(cfg.reverse) arr.reverse();
+  return arr.map(function(b){ return b.id; });
+}
+
+/* ---------- layout ---------- */
+function computeLayout(){
+  var Wi = shelf.clientWidth;
+  var Hi = $('#unitwrap').clientHeight - 6 - 6 - 2;   // shadow gutter, borders, slack
+  if(Wi<=0) Wi = 340;
+  if(Hi<=0) Hi = 400;
+  var n = books.length, gap = 3, pad = 10, boardH = 14, headroom = 10;
+  var ws = books.map(function(b){ return b.w; }).sort(function(a,b){ return b-a; });
+  var maxH = 0; books.forEach(function(b){ if(b.h>maxH) maxH=b.h; });
+  var best = null, r, i;
+  for(r=1;r<=n;r++){
+    var per = Math.ceil(n/r);
+    if(Math.ceil(n/per)!==r) continue;
+    var sumW = 0; for(i=0;i<per;i++) sumW += ws[i];
+    var sw = (Wi - 2*pad - (per-1)*gap) / sumW;
+    var sh = (Hi/r - boardH - headroom - 4) / maxH;
+    var sc = Math.max(0.3, Math.min(1.3, sw, sh));
+    if(!best || sc > best.s*1.08) best = {s:sc, rows:r, perRow:per};
+  }
+  L = {s:best.s, gap:gap, pad:pad, rows:best.rows, perRow:best.perRow, maxH:maxH, boardH:boardH, headroom:headroom,
+       stride: headroom + maxH*best.s + boardH + 4};
+}
+
+function dims(it){
+  if(it==='ghost') return {w:drag.w, h:drag.h};
+  return byId[it];
+}
+
+function placeAll(items){
+  var x = 0;
+  items.forEach(function(it,i){
+    var r = Math.floor(i/L.perRow), c = i%L.perRow;
+    if(c===0) x = L.pad;
+    var d = dims(it);
+    var y = r*L.stride + L.headroom + (L.maxH - d.h)*L.s;
+    var el = it==='ghost' ? ghostEl : byId[it].el;
+    curPos[it] = {x:x, y:y};
+    if(!(drag && drag.started && it===drag.id)){
+      el.style.transform = 'translate('+x+'px,'+y+'px)';
+    }
+    x += d.w*L.s + L.gap;
+  });
+  updateAria();
+}
+
+function updateAria(){
+  var n = order.length;
+  order.forEach(function(id,i){
+    var b = byId[id];
+    b.el.setAttribute('aria-label', b.title+', position '+(i+1)+' of '+n+'. Arrow keys move this book.');
+  });
+}
+
+function buildShelf(intro){
+  clearTimeout(introTimer);
+  shelf.className = 'noanim';
+  shelf.innerHTML = '';
+  computeLayout();
+  shelf.style.height = (L.rows*L.stride) + 'px';
+
+  var r;
+  for(r=0;r<L.rows;r++){
+    var bd = document.createElement('div');
+    bd.className = 'board';
+    bd.style.top = (r*L.stride + L.headroom + L.maxH*L.s) + 'px';
+    shelf.appendChild(bd);
+  }
+  ghostEl = document.createElement('div'); ghostEl.className='slot'; shelf.appendChild(ghostEl);
+  markerEl = document.createElement('div'); markerEl.className='marker'; shelf.appendChild(markerEl);
+
+  order.forEach(function(id,i){
+    var b = byId[id];
+    var el = document.createElement('div');
+    el.className = 'book v'+b.variant;
+    el.tabIndex = 0;
+    el.setAttribute('role','button');
+    el.dataset.id = id;
+    el.style.width = (b.w*L.s)+'px';
+    el.style.height = (b.h*L.s)+'px';
+    el.style.setProperty('--c','hsl('+b.hue.toFixed(1)+','+b.s+'%,'+b.l+'%)');
+    el.style.setProperty('--i', i);
+    var t = document.createElement('span');
+    t.className = 't';
+    t.textContent = b.title;
+    var availH = b.h*L.s - 28;
+    var fs = Math.min(availH/(b.title.length*b.font.k), b.w*L.s*0.62, 17*L.s);
+    t.style.fontSize = Math.max(7.5, fs).toFixed(1)+'px';
+    t.style.fontFamily = '"'+b.font.n+'", '+b.font.fb;
+    t.style.color = b.ink;
+    el.appendChild(t);
+    shelf.appendChild(el);
+    b.el = el;
+  });
+  placeAll(order);
+  lastW = shelf.clientWidth; lastH = $('#unitwrap').clientHeight;
+  void shelf.offsetWidth;
+  shelf.className = '';
+  if(intro){
+    shelf.classList.add('intro');
+    introTimer = setTimeout(function(){ shelf.classList.remove('intro'); }, order.length*35 + 800);
+  }
+}
+
+/* ---------- dragging ---------- */
+shelf.addEventListener('pointerdown', function(e){
+  if(solved || drag) return;
+  if(e.pointerType==='mouse' && e.button!==0) return;
+  var el = e.target.closest('.book');
+  if(!el) return;
+  var id = +el.dataset.id;
+  drag = {id:id, el:el, sx:e.clientX, sy:e.clientY, cx:e.clientX, cy:e.clientY, started:false, pid:e.pointerId,
+          w:byId[id].w, h:byId[id].h};
+  try{ el.setPointerCapture(e.pointerId); }catch(_){}
+});
+shelf.addEventListener('pointermove', function(e){
+  if(!drag || e.pointerId!==drag.pid) return;
+  drag.cx = e.clientX; drag.cy = e.clientY;
+  if(!drag.started){
+    if(Math.hypot(e.clientX-drag.sx, e.clientY-drag.sy) < 5) return;
+    startDrag();
+  }
+  updateDrag();
+});
+shelf.addEventListener('pointerup', endDrag);
+shelf.addEventListener('pointercancel', endDrag);
+shelf.addEventListener('contextmenu', function(e){ if(drag) e.preventDefault(); });
+
+function startDrag(){
+  var rect = shelf.getBoundingClientRect();
+  var pos = curPos[drag.id];
+  drag.offX = drag.sx - rect.left - pos.x;
+  drag.offY = drag.sy - rect.top - pos.y;
+  drag.orig = order.indexOf(drag.id);
+  drag.L = order.filter(function(x){ return x!==drag.id; });
+  drag.gi = drag.orig;
+  drag.started = true;
+  drag.el.classList.add('dragging');
+  ghostEl.style.width = (drag.w*L.s)+'px';
+  ghostEl.style.height = (drag.h*L.s)+'px';
+  ghostEl.style.display = 'block';
+  markerEl.classList.remove('on');
+  rebuildItems();
+  placeAll(drag.items);
+  rafId = requestAnimationFrame(loop);
+}
+function rebuildItems(){
+  drag.items = drag.L.slice();
+  drag.items.splice(drag.gi, 0, 'ghost');
+}
+function updateDrag(){
+  var rect = shelf.getBoundingClientRect();
+  var px = drag.cx - rect.left, py = drag.cy - rect.top;
+  drag.el.style.transform = 'translate('+(px-drag.offX)+'px,'+(py-drag.offY)+'px) rotate(-2deg)';
+
+  var row = clamp(Math.floor(py / L.stride), 0, L.rows-1);
+  var A = drag.items, g = drag.gi;
+  var start = row*L.perRow, end = Math.min(start+L.perRow, A.length);
+  var newGi = null, anyBook = false, p;
+  for(p=start;p<end;p++){
+    var it = A[p];
+    if(it==='ghost') continue;
+    anyBook = true;
+    var c = curPos[it].x + byId[it].w*L.s/2;
+    if(px < c){ newGi = p<g ? p : p-1; break; }
+  }
+  if(anyBook && newGi===null){
+    var lastP = end-1;
+    if(A[lastP]==='ghost') lastP--;
+    newGi = (lastP<g ? lastP : lastP-1) + 1;
+  }
+  if(newGi!==null && newGi!==g){
+    drag.gi = newGi;
+    rebuildItems();
+    placeAll(drag.items);
+  }
+}
+function loop(){
+  if(!drag || !drag.started) return;
+  var y = drag.cy, vh = window.innerHeight, dy = 0;
+  if(y < 80) dy = -Math.ceil((80-y)/6);
+  else if(y > vh-80) dy = Math.ceil((y-(vh-80))/6);
+  if(dy){ window.scrollBy(0,dy); updateDrag(); }
+  rafId = requestAnimationFrame(loop);
+}
+function endDrag(e){
+  if(!drag || (e && e.pointerId!==drag.pid)) return;
+  var d = drag; drag = null;
+  cancelAnimationFrame(rafId);
+  try{ d.el.releasePointerCapture(d.pid); }catch(_){}
+  if(!d.started) return;
+  d.el.classList.remove('dragging');
+  ghostEl.style.display = 'none';
+  var newOrder = d.L.slice(); newOrder.splice(d.gi,0,d.id);
+  order = newOrder;
+  placeAll(order);
+  if(d.gi!==d.orig){ moves++; updateMoves(); setStatus(DEFAULT_STATUS); }
+  scheduleSync();
+  check();
+}
+
+/* keep DOM order = shelf order so Tab follows the shelf */
+function scheduleSync(){
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(function(){
+    if(drag) return;
+    var a = document.activeElement;
+    var keep = a && a.classList && a.classList.contains('book') ? a : null;
+    order.forEach(function(id){ shelf.appendChild(byId[id].el); });
+    if(keep) keep.focus({preventScroll:true});
+  }, 320);
+}
+
+/* keyboard moves */
+shelf.addEventListener('keydown', function(e){
+  if(solved) return;
+  var el = e.target.closest ? e.target.closest('.book') : null;
+  if(!el) return;
+  var id = +el.dataset.id, i = order.indexOf(id), j = i;
+  if(e.key==='ArrowLeft') j = i-1;
+  else if(e.key==='ArrowRight') j = i+1;
+  else if(e.key==='ArrowUp') j = i-L.perRow;
+  else if(e.key==='ArrowDown') j = i+L.perRow;
+  else return;
+  e.preventDefault();
+  if(j<0 || j>=order.length) return;
+  order.splice(i,1); order.splice(j,0,id);
+  moves++; updateMoves();
+  placeAll(order);
+  setStatus('Moved to position '+(j+1)+' of '+order.length+'.');
+  scheduleSync();
+  check();
+});
+
+/* ---------- game flow ---------- */
+function setStatus(t){ $('#status').textContent = t; }
+function updateMoves(){ $('#moves').textContent = moves; }
+function fmt(ms){ var s=Math.floor(ms/1000); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function tick(){ if(timerOn) $('#timerVal').textContent = fmt(performance.now()-startT); }
+
+function startGame(){
+  mode = cfg.mode==='surprise' ? pick(['color','title','width','height']) : cfg.mode;
+  var n = cfg.size==='custom' ? cfg.count : SIZES[cfg.size];
+  books = makeBooks(mode,n);
+  byId = {}; books.forEach(function(b){ byId[b.id]=b; });
+  var sol = solution();
+  do { order = shuffle(books.map(function(b){ return b.id; })); }
+  while(order.every(function(id,i){ return id===sol[i]; }));
+  moves = 0; hints = 0; solved = false;
+  updateMoves();
+  $('#win').hidden = true;
+  $('#setup').hidden = true;
+  $('#game').hidden = false;
+  var g = GOALS[mode][cfg.reverse?1:0];
+  $('#goal').innerHTML = '<b>'+g+'.</b>Left to right, top shelf first.';
+  setStatus(DEFAULT_STATUS);
+  buildShelf(true);
+  startT = performance.now();
+  clearInterval(timerInt);
+  timerInt = setInterval(tick, 500);
+  tick();
+  window.scrollTo(0,0);
+}
+
+function check(){
+  if(solved) return;
+  var sol = solution();
+  if(order.every(function(id,i){ return id===sol[i]; })) win();
+}
+
+function win(){
+  solved = true;
+  clearInterval(timerInt);
+  var t = performance.now()-startT;
+  order.forEach(function(id,i){ byId[id].el.style.setProperty('--i', i); });
+  shelf.classList.add('won');
+  var n = books.length;
+  var key = 'shelved:best:'+mode+':'+n+':'+(cfg.reverse?1:0);
+  var prev = store.get(key), best = null, newBest = false;
+  if(prev){ var p = prev.split('|'); best = {moves:+p[0], time:+p[1]}; }
+  if(!best || moves < best.moves){ newBest = true; store.set(key, moves+'|'+Math.round(t)); best = {moves:moves, time:t}; }
+  $('#wMoves').textContent = moves;
+  $('#wTime').textContent = fmt(t);
+  $('#wHints').textContent = hints;
+  $('#winSub').textContent = GOALS[mode][cfg.reverse?1:0].replace('Sort by','Sorted by')+' with '+n+' books.';
+  $('#winBest').textContent = newBest ? 'New best for this setup.' : 'Your best for this setup is '+best.moves+' moves.';
+  setStatus('Shelf complete.');
+  setTimeout(function(){ if(solved) $('#win').hidden = false; }, n*45 + 750);
+}
+
+function hint(){
+  if(solved || (drag && drag.started) || !order.length) return;
+  var sol = solution();
+  var i = -1, k;
+  for(k=0;k<order.length;k++){ if(order[k]!==sol[k]){ i=k; break; } }
+  if(i<0) return;
+  hints++;
+  var b = byId[sol[i]];
+  var row = Math.floor(i/L.perRow), x = L.pad, q;
+  for(q=row*L.perRow;q<i;q++) x += byId[order[q]].w*L.s + L.gap;
+  var y = row*L.stride + L.headroom + (L.maxH - b.h)*L.s;
+  markerEl.style.width = (b.w*L.s)+'px';
+  markerEl.style.height = (b.h*L.s)+'px';
+  markerEl.style.transform = 'translate('+x+'px,'+y+'px)';
+  markerEl.classList.remove('on'); void markerEl.offsetWidth; markerEl.classList.add('on');
+  b.el.classList.remove('hinting'); void b.el.offsetWidth; b.el.classList.add('hinting');
+  setStatus('The flashing book, "'+b.title+'", belongs in the marked spot.');
+  setTimeout(function(){ markerEl.classList.remove('on'); b.el.classList.remove('hinting'); }, 2300);
+}
+
+function toSetup(){
+  clearInterval(timerInt);
+  $('#win').hidden = true;
+  $('#game').hidden = true;
+  $('#setup').hidden = false;
+  window.scrollTo(0,0);
+}
+
+/* ---------- setup form ---------- */
+function readForm(){
+  cfg.mode = document.querySelector('input[name=mode]:checked').value;
+  cfg.size = document.querySelector('input[name=size]:checked').value;
+  cfg.count = +$('#count').value;
+  cfg.reverse = $('#reverse').checked;
+}
+function saveCfg(){ store.set('shelved:cfg', JSON.stringify(cfg)); }
+function loadCfg(){
+  var raw = store.get('shelved:cfg');
+  if(!raw) return;
+  try{
+    var c = JSON.parse(raw);
+    var m = document.querySelector('input[name=mode][value="'+c.mode+'"]'); if(m) m.checked = true;
+    var s = document.querySelector('input[name=size][value="'+c.size+'"]'); if(s) s.checked = true;
+    if(c.count>=4 && c.count<=24) $('#count').value = c.count;
+    $('#reverse').checked = !!c.reverse;
+  }catch(_){}
+}
+function syncCustom(){
+  var custom = document.querySelector('input[name=size]:checked').value==='custom';
+  $('#customRow').hidden = !custom;
+  $('#countOut').textContent = $('#count').value;
+}
+$('#form').addEventListener('change', syncCustom);
+$('#count').addEventListener('input', syncCustom);
+$('#form').addEventListener('submit', function(e){
+  e.preventDefault(); readForm(); saveCfg(); startGame();
+});
+
+/* buttons */
+$('#hintBtn').addEventListener('click', hint);
+$('#againBtn').addEventListener('click', startGame);
+$('#setupBtn').addEventListener('click', toSetup);
+$('#playAgain').addEventListener('click', startGame);
+$('#changeSetup').addEventListener('click', toSetup);
+$('#lookBtn').addEventListener('click', function(){ $('#win').hidden = true; });
+$('#timerBtn').addEventListener('click', function(){
+  timerOn = !timerOn;
+  this.setAttribute('aria-pressed', timerOn);
+  $('#timerVal').textContent = timerOn ? fmt(performance.now()-startT) : 'off';
+});
+
+var rz;
+function refit(){
+  if(!books.length || $('#game').hidden || drag) return;
+  var w = shelf.clientWidth, h = $('#unitwrap').clientHeight;
+  if(Math.abs(w-lastW)<2 && Math.abs(h-lastH)<2) return;
+  var wasWon = solved;
+  buildShelf(false);
+  if(wasWon) shelf.classList.remove('won');
+}
+function queueRefit(){ clearTimeout(rz); rz = setTimeout(refit, 120); }
+window.addEventListener('resize', queueRefit);
+if(window.ResizeObserver) new ResizeObserver(queueRefit).observe($('#unitwrap'));
+
+/* ---------- hero shelf ---------- */
+(function hero(){
+  var row = $('#heroRow');
+  var spec = [
+    [30,120,4,'Amber Almanac',0],[22,140,32,'Fable Folio',1],[38,110,150,'Juniper Atlas',2],
+    [26,150,200,'Orchard Odes',0],[44,125,340,'Velvet Sagas',1,true],[20,135,48,'Kelp Notes',2],
+    [34,115,255,'Wren Letters',0],[28,145,175,'Salt Primer',1],[40,128,18,'Ripple Diary',2],[24,138,280,'Zenith Tales',0]
+  ];
+  spec.forEach(function(s){
+    var el = document.createElement('div');
+    el.className = 'book v'+s[4]+(s[5]?' lifted':'');
+    el.style.width = s[0]+'px'; el.style.height = (s[1]/150*88)+'%';
+    el.style.setProperty('--c','hsl('+s[2]+',75%,54%)');
+    var t = document.createElement('span');
+    t.className = 't'; t.textContent = s[3];
+    t.style.fontSize = '11px';
+    t.style.fontFamily = '"'+FONTS[s[4]].n+'", '+FONTS[s[4]].fb;
+    t.style.color = textFor(s[2],75,54);
+    el.appendChild(t);
+    row.appendChild(el);
+  });
+})();
+
+loadCfg();
+syncCustom();
+})();
+</script>
+</body>
+</html>
